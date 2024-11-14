@@ -40,10 +40,10 @@ def register(name, address, phone, email):
             print(user_detail_db)
     else:
         dailogue('The phone number is already registerd. Try login or another number')
-        test()
+        main()
             
 
-def test():
+def main():
     y = 'n'
     new = input('Are you a new user?(y/n) : ')
     print(new)
@@ -64,4 +64,5 @@ def test():
         login(user, password)
         y = input('Exit?(y/n): ')
 
-test()
+def __init__():
+    main()
