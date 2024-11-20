@@ -1,68 +1,77 @@
-user_detail_db = [['Milan','1234',['Milan','','Gurung'],'Hattiban, Lalitpur',9742821010,'notmilan@hotmail.com'],]
-def dailogue(s: str):
-    print(s)
-def store(db, username, password, name, address, phone, email):
-    db += [[username, password, name, address, phone, email]]
+import tkinter as tk
+from UI.register_UI import Register, Account
+from UI.login_UI import Login
+class tkinterApp(tk.Tk):
+    # __init__ function for class tkinterApp 
+    def __init__(self, frames,  *args, **kwargs): 
+         
+        # __init__ function for class Tk
+        tk.Tk.__init__(self, *args, **kwargs)
+         
+        # creating a container
+        self.container = tk.Frame(self)  
+        self.container.pack(side = "top", fill = "both", expand = True) 
+        
+  
+        self.container.grid_rowconfigure(0, weight = 1)
+        self.container.grid_columnconfigure(0, weight = 1)
+  
+        # initializing frames to an empty array
 
-def home(user: str):
-    print(f'Welcome, {user}')
+        self.frames = {}
+        # iterating through a tuple consisting
+        # of the different page layouts
+        for F in frames:
+            frame = F(self.container, self)
+            self.frames[F.__name__] = frame
+            frame.grid(row = 0, column = 0, sticky ="nsew")
+            # initializing frame of that object from
+            # startpage, page1, page2 respectively with 
+            # for loop
+  
+        self.show_frame(cont='StartPage')
+  
+    # to display the current frame passed as
+    # parameter
+    def show_frame(self, Page = None, cont: str | None = None ):
 
-def search(username, db):
-    for user in user_detail_db:
-        if user[0] == username:
-            return user[1]
-    else:
-        return None
-
-def query(username, password):
-    temp = search(username, user_detail_db)
-    if password == temp:
-        return 1
-    else:
-        return 0
-    
-def login(username: str, password: str):
-
-    if not(query(username, password)):
-        dailogue('Wrong Credentials. Try again.')
-        return 0
-    home(username)
-
-def register(name, address, phone, email):
-    if phone not in [user[4] for user in user_detail_db]:
-        username = input('Create a username: ')
-        while username in [user[0] for user in user_detail_db]:
-            dailogue('User name take. Try different one')
-            username = input('Create a username: ')
+        if Page != None:
+            frame = Page
+            frame.grid(row = 0, column = 0, sticky ="nsew")
         else:
-            password = input('Enter a password: ')
-            store(user_detail_db,username, password, name, address, phone, email)
-            print(user_detail_db)
-    else:
-        dailogue('The phone number is already registerd. Try login or another number')
-        main()
-            
+            frame = self.frames[cont]
+        
+        frame.tkraise()
 
-def main():
-    y = 'n'
-    new = input('Are you a new user?(y/n) : ')
-    print(new)
-    if new == 'y':
-        dailogue('Register')
-        fname = input('Enter first name: ')
-        mname = input('Enter middle name(optional): ')
-        lname = input('Enter lastname name: ')
-        name = [fname, mname, lname]
-        address = input('Enter your address: ')
-        phone = int(input('Enter your phone number: '))
-        email = input('Enter your emial: ')
-        register(name, address, phone, email)
-    dailogue('Login')
-    while y != 'y':
-        user = input('Enter the username: ')
-        password = input('Enter the password: ')
-        login(user, password)
-        y = input('Exit?(y/n): ')
+class StartPage(tk.Frame):
+    def __init__(self, parent, controller): 
+        tk.Frame.__init__(self, parent)
+         
+        # label of frame Layout 2
+        label = tk.Label(self, text ="Startpage")
+         
+        # putting the grid in its place by using
+        # grid
+        label.grid(row = 0, column = 0, padx = 100, pady = 10) 
 
-def __init__():
-    main()
+        button1 = tk.Button(self, text ="Login",
+        command = lambda : controller.show_frame(cont='Login'))
+     
+        # putting the button in its place by
+        # using grid
+        button1.grid(row = 1, column = 0, padx = 350, pady = 10)
+  
+        ## button to show frame 2 with text layout2
+        button2 = tk.Button(self, text ="Register",
+        command = lambda : controller.show_frame(cont='Register'))
+     
+        # putting the button in its place by
+        # using grid
+        button2.grid(row = 2, column = 0, padx = 100, pady = 10)
+frames = (StartPage, Login, Register)
+app = tkinterApp(frames)
+app.geometry('800x500')
+
+
+
+app.mainloop()

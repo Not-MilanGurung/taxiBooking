@@ -1,9 +1,12 @@
-from sqlite3 import Connection
+from sqlite3 import *
+
+con = connect("Database/user.db")
 
 # cur.execute("CREATE TABLE login(Id INTEGER PRIMARY KEY AUTOINCREMENT, UserName, Password, Phone, Address, Email, Name)")
 # cur.execute("DROP TABLE login")
 
-def login(con: Connection, user_name: str, password: str) -> bool:
+
+def login(user_name: str, password: str) -> bool:
 
     cur = con.cursor()
     # Checking if the User Name is registered
@@ -23,32 +26,33 @@ def login(con: Connection, user_name: str, password: str) -> bool:
     return True
 
     
-def personal_detail(con: Connection, name , address: str, phone: int, email: str) -> bool:
+def personal_detail( name , address: str, phone = 00,  email: str = '', con_in: Connection | None = None) :
+
     cur = con.cursor()
     #Query database if the phone number is already registered
-    res = cur.execute(f"SELECT phone from login where phone={phone}")
+    query = f"SELECT phone from login where phone={phone}"
+    res = cur.execute(query)
     if res.fetchone() is not(None):
-        print('The phone is already registered. Try logging in or using a different phone')
-        return False
+        return 'The phone is already registered. Try logging in or using a different phone'
+    return (name, address, phone, email)
 
-    # Looping till a valid username is given
-    while True:
-        user = input('Create your username: ')
+def account( username, password, personal: tuple , con_in: Connection | None = None ):  
 
-        # Checking if the username is already taken
-        res = cur.execute(f"SELECT UserName from login where UserName='{user}'")  
-        if res.fetchone() is not(None):
-            print('The username is taken, try another one')
-            return False
-        
+    cur = con.cursor()
+    (name, address, phone, email) = personal
 
-        password = input('Enter your password: ')
-        # Joining first, middle and last name with space between them into a single string
-        fullName = " ".join(name)
+    # Checking if the username is already taken
+    res = cur.execute(f"SELECT UserName from login where UserName='{username}'")  
+    if res.fetchone() is not(None):
+        return 'The username is taken, try another one'
+    
 
-        data = (user, password, phone, address, email, fullName)
-        cur.execute("INSERT INTO login(UserName, Password, Phone, Address, Email, Name) VALUES(?, ?, ?, ?, ?, ?)", data)
+    data = (username, password, phone, address, email, name)
+    cur.execute("INSERT INTO login(UserName, Password, Phone, Address, Email, Name) VALUES(?, ?, ?, ?, ?, ?)", data)
 
-        # Commiting the operations into the database
-        con.commit()
-        return True
+    # Commiting the operations into the database
+    con.commit()
+    return 'The account has been created. Go to the login page.'
+
+def close_connection():
+    con.close()
