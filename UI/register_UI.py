@@ -1,12 +1,12 @@
 import tkinter as tk
-from Database.login_user import personal_detail, account
+from Database.login_register_user import personal_detail, account
 
 class Register(tk.Frame):
     
     def check(self):
         fullName = " ".join((self.fname.get(),self.mname.get(), self.lname.get()))
         res = personal_detail( fullName, self.address.get(), self.phone.get(), self.email.get())
-        print(res)
+        
         if type(res) != tuple : 
             tk.Message(self, test=res).grid(row=8, column=2)
         else: 
@@ -91,8 +91,8 @@ class Account(tk.Frame):
         back.grid(row=4, column= 2)
 
     def gotoStart(self):
-        lambda: self.controller.show_frame(cont = 'StartPage')
         self.destroy()
+        return self.controller.show_frame(cont = 'StartPage')
         # print('destroied')
         
     
