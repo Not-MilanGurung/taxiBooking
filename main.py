@@ -48,13 +48,13 @@ class StartPage(tk.Frame):
         label.grid(row = 0, column = 0, padx = 100, pady = 10) 
 
         button1 = tk.Button(self, text ="Login", command = lambda : controller.show_frame(cont='Login'))
-        button1.grid(row = 1, column = 0, padx = 350, pady = 10)
+        button1.grid(row = 1, column = 0,  pady = 10)
   
         button2 = tk.Button(self, text ="Register", command = lambda : controller.show_frame(cont='Register'))
-        button2.grid(row = 2, column = 0, padx = 100, pady = 10)
+        button2.grid(row = 2, column = 0,  pady = 10)
 
         button3 = tk.Button(self, text ="Query Test", command = lambda : controller.show_frame(cont='Query'))
-        button3.grid(row = 3, column = 0, padx = 100, pady = 10)
+        button3.grid(row = 3, column = 0,  pady = 10)
 
 
 frames = (StartPage, Login, Register, Query)
