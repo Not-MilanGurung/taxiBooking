@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from UI.register_UI import Register
 from UI.login_UI import Login
 from UI.query_test_UI import Query
@@ -12,20 +13,23 @@ class tkinterApp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
          
         # creating a container
-        container = tk.Frame(self)  
-        container.pack(side = "top", fill = "both", expand = True) 
+        mainframe = ttk.Frame(self, padding='3 3 12 12')  
+        mainframe.grid(column=0, row=0, sticky=tk.N + tk.W + tk.E + tk.S) 
         
   
-        container.grid_rowconfigure(0, weight = 1)
-        container.grid_columnconfigure(0, weight = 1)
+        self.grid_columnconfigure(0, weight = 1)
+        self.grid_rowconfigure(0, weight = 1)
+        mainframe.grid_columnconfigure(0, weight = 1)
+        mainframe.grid_rowconfigure(0, weight = 1)
+
   
         
         self.frames = {}
         # iterating through a tuple consisting of the different page layouts
         for F in frames:
-            frame = F(container, self)
+            frame = F(mainframe, self)
             self.frames[F.__name__] = frame
-            frame.grid(row = 0, column = 0, sticky ="nsew")
+            frame.grid(row = 0, column = 0,sticky =(tk.N, tk.S, tk.E, tk.W))
 
   
         self.show_frame(cont='StartPage')
@@ -34,27 +38,33 @@ class tkinterApp(tk.Tk):
 
         if Page != None:
             frame = Page
-            frame.grid(row = 0, column = 0, sticky ="nsew")
+            frame.grid(row = 0, column = 0, sticky =(tk.N, tk.S, tk.E, tk.W))
         else:
             frame = self.frames[cont]
         
         frame.tkraise()
 
-class StartPage(tk.Frame):
-    def __init__(self, parent, controller): 
-        tk.Frame.__init__(self, parent)
+class StartPage(ttk.Frame):
+    def __init__(self, mainframe, root): 
+        ttk.Frame.__init__(self, mainframe)
 
-        label = tk.Label(self, text ="Startpage")
-        label.grid(row = 0, column = 0, padx = 100, pady = 10) 
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure([0,1,2,3], weight=1)
 
-        button1 = tk.Button(self, text ="Login", command = lambda : controller.show_frame(cont='Login'))
+
+        label = ttk.Label(self, text ="Startpage", anchor='center')
+        label.grid(row = 0, column = 0,  pady = 10, padx=5) 
+
+        button1 = ttk.Button(self, text ="Login", command = lambda : root.show_frame(cont='Login'))
         button1.grid(row = 1, column = 0,  pady = 10)
   
-        button2 = tk.Button(self, text ="Register", command = lambda : controller.show_frame(cont='Register'))
+        button2 = ttk.Button(self, text ="Register", command = lambda : root.show_frame(cont='Register'))
         button2.grid(row = 2, column = 0,  pady = 10)
 
-        button3 = tk.Button(self, text ="Query Test", command = lambda : controller.show_frame(cont='Query'))
+        button3 = ttk.Button(self, text ="Query Test", command = lambda : root.show_frame(cont='Query'))
         button3.grid(row = 3, column = 0,  pady = 10)
+
+
 
 
 frames = (StartPage, Login, Register, Query)
@@ -62,6 +72,6 @@ frames = (StartPage, Login, Register, Query)
 if __name__ == '__main__':
 
     app = tkinterApp(frames)
-    app.geometry('800x500')
+    # app.geometry('800x500')
 
     app.mainloop()

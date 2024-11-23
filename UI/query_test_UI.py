@@ -3,9 +3,12 @@ from Database.query import *
 
 class Query(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, mainframe, root):
 
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, mainframe)
+
+        self.columnconfigure([0,1], weight=1)
+        self.rowconfigure([0,1,2], weight=1)
 
         column_Label = tk.Label(self, text='Column')
         para_Label = tk.Label(self, text='Parameter')
@@ -17,13 +20,16 @@ class Query(tk.Frame):
         self.column_Entry.grid(row=1, column=0, padx=50, pady=10)
         self.para_Entry.grid(row=1, column=1, padx=50)
 
-        button_StartPage = tk.Button(self, text='Start Page', command=lambda: controller.show_frame('StartPage'))
+        button_StartPage = tk.Button(self, text='Start Page', command=lambda: root.show_frame(cont='StartPage'))
         button_StartPage.grid(row=2, column=0, pady=10)
 
-        button_Query = tk.Button(self, text='Start Page', command=self.show)
-        button_Query.grid(row=2, column=0, pady=10)
+        button_Query = tk.Button(self, text='Query', command=self.show)
+        button_Query.grid(row=2, column=1, pady=10)
 
     
     def show(self):
-        res = select_from('login', self.column_Entry.get(), self.para_Entry.get())
-        tk.Message(self, text=res).grid(row=3, column=0, columnspan=2)
+        try:
+            res = select_from('login', self.column_Entry.get(), self.para_Entry.get())
+            tk.Message(self, text=res).grid(row=3, column=0, columnspan=2)
+        except:
+            pass
