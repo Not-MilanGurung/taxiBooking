@@ -6,7 +6,7 @@ con = connect("Database/user.db")
 # cur.execute("DROP TABLE login")
 
 
-def login(user_name: str, password: str) :
+def login(user_name: str, password: str):
 
     cur = con.cursor()
 
@@ -22,7 +22,7 @@ def login(user_name: str, password: str) :
 
     
     # Login if the requirements are met
-    return f'Welcome, {user_name}'
+    return True
 
 
     

@@ -1,4 +1,4 @@
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from Database.login_register_user import personal_detail, account
 
 class Register(ttk.Frame):
@@ -9,7 +9,7 @@ class Register(ttk.Frame):
             res = personal_detail( fullName, self.address.get(), self.phone.get(), self.email.get())
             
             if type(res) != tuple : 
-                ttk.Message(self, test=res).grid(row=8, column=2)
+                messagebox.showerror('Error', res).grid(row=8, column=2)
             else: 
                 self.root.show_frame(Page=Account(self.mainframe, self.root, res))
         except ValueError:
@@ -17,21 +17,21 @@ class Register(ttk.Frame):
      
     def __init__(self, mainframe, root):
 
-        ttk.Frame.__init__(self, mainframe)
+        ttk.Frame.__init__(self, mainframe, style='LoginRegister.TFrame')
         self.rowconfigure([0,1,2,3,4,5,6,7], weight=1)
         self.columnconfigure([0,1,2,3], weight=1)
 
-        text = ttk.Label(self, text="Register", font="TimesNewRoman 28")
+        text = ttk.Label(self, text="Register", style='mainBgText.TLabel')
         
         text.grid(row=0, column=2,pady=10)
         self.root = root
         self.mainframe= mainframe
 
-        fL = ttk.Label(self, text="First Name", font='TimesNewRoman')
+        fL = ttk.Label(self, text="First Name", style='mainBgText.TLabel')
         fL.grid(row=1, column=1,pady=10, padx=10)
-        mL = ttk.Label(self, text="Middle Name", font='TimesNewRoman')
+        mL = ttk.Label(self, text="Middle Name", style='mainBgText.TLabel')
         mL.grid(row=1, column=2,padx=10, pady=10)
-        lL = ttk.Label(self, text="Last Name", font='TimesNewRoman')
+        lL = ttk.Label(self, text="Last Name", style='mainBgText.TLabel')
         lL.grid(row=1, column=3,padx=10,pady=10)
         self.fname = ttk.Entry(self)
         self.mname = ttk.Entry(self)
@@ -40,20 +40,20 @@ class Register(ttk.Frame):
         self.mname.grid(row=2, column=2,padx=10)
         self.lname.grid(row=2, column=3,padx=10)
 
-        phoneL = ttk.Label(self, text="Phone Number", font='TimesNewRoman')
+        phoneL = ttk.Label(self, text="Phone Number", style='mainBgText.TLabel')
         phoneL.grid(row=3, column=1,pady=10)
-        emailL = ttk.Label(self, text="Email", font='TimesNewRoman')
+        emailL = ttk.Label(self, text="Email", style='mainBgText.TLabel')
         emailL.grid(row=3, column=3,pady=10)
         self.phone = ttk.Entry(self)
         self.email = ttk.Entry(self)
         self.phone.grid(row=4, column=1,padx=10)
         self.email.grid(row=4, column=3,padx=10)
 
-        addL = ttk.Label(self, text="Address", font='TimesNewRoman')
+        addL = ttk.Label(self, text="Address", style='mainBgText.TLabel')
         addL.grid(row=5, column=1,pady=10)
         self.address = ttk.Entry(self)
         self.address.grid(row=6, column=1,padx=10)
-        # ttk.Label(self, text='Gender', font='TimesNewRoman').grid(row=9, column=1,pady=10)
+        # ttk.Label(self, text='Gender').grid(row=9, column=1,pady=10, style='mainBgText.TLabel')
         # radioMale = ttk.Radiobutton(self, text='Male', value='male')
         # radioMale.grid(row=9, column=2)
         # radioFemale = ttk.Radiobutton(self, text='Female', value='female')
@@ -75,22 +75,22 @@ class Account(ttk.Frame):
     def store(self):
         try:
             res = account(self.userName.get(), self.password.get(),self.personal)
-            ttk.Message(self,text=res).grid(row=3, column=2)        
+            messagebox.showinfo('Successfull', res)       
         except ValueError:
             pass
 
     def __init__(self, mainframe, root, personal: tuple):
 
-        ttk.Frame.__init__(self, mainframe) 
+        ttk.Frame.__init__(self, mainframe, style='LoginRegister.TFrame') 
 
         self.root = root
         self.personal = personal
 
         self.columnconfigure([0,1,2,3], weight=1)
         self.rowconfigure([0,1,2,3,4], weight=1)
-        userL = ttk.Label(self, text="User Name", font='TimesNewRoman')
+        userL = ttk.Label(self, text="User Name", style='mainBgText.TLabel')
         userL.grid(row=1, column=1,pady=10)
-        passL= ttk.Label(self, text="Password", font='TimesNewRoman')
+        passL= ttk.Label(self, text="Password", style='mainBgText.TLabel')
         passL.grid(row=1, column=3,pady=10)
         self.userName = ttk.Entry(self)
         self.password = ttk.Entry(self, show='*')

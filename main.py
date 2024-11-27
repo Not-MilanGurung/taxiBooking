@@ -3,6 +3,7 @@ from tkinter import ttk
 from UI.register_UI import Register
 from UI.login_UI import Login
 from UI.query_test_UI import Query
+from UI.style import TaxiAppStyle
 
 
 class tkinterApp(tk.Tk):
@@ -13,8 +14,10 @@ class tkinterApp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
          
         # creating a container
-        mainframe = ttk.Frame(self, padding='3 3 12 12')  
+        mainframe = ttk.Frame(self)  
         mainframe.grid(column=0, row=0, sticky=tk.N + tk.W + tk.E + tk.S) 
+
+        s = TaxiAppStyle(mainframe)
         
   
         self.grid_columnconfigure(0, weight = 1)
@@ -48,26 +51,33 @@ class StartPage(ttk.Frame):
     def __init__(self, mainframe, root): 
         ttk.Frame.__init__(self, mainframe)
 
+        login = Login(self, root)
+        login.grid_propagate(0)
+        login.grid(row=0, column=0, sticky='')
+
+        register = Register(self, root)
+        register.grid_propagate(0)
+        register.grid(row=0, column=0, sticky='')
+
+        self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.rowconfigure([0,1,2,3], weight=1)
 
 
+        '''
         label = ttk.Label(self, text ="Startpage", anchor='center')
         label.grid(row = 0, column = 0,  pady = 10, padx=5) 
 
-        button1 = ttk.Button(self, text ="Login", command = lambda : root.show_frame(cont='Login'))
-        button1.grid(row = 1, column = 0,  pady = 10)
-  
-        button2 = ttk.Button(self, text ="Register", command = lambda : root.show_frame(cont='Register'))
-        button2.grid(row = 2, column = 0,  pady = 10)
 
-        button3 = ttk.Button(self, text ="Query Test", command = lambda : root.show_frame(cont='Query'))
+
+
+        button3 = ttk.Button(self, text ="Customer Test", command = lambda : root.show_frame(Page=Customer(mainframe, root, 'Test')))
         button3.grid(row = 3, column = 0,  pady = 10)
+        '''
 
 
 
 
-frames = (StartPage, Login, Register, Query)
+frames = (StartPage,)
 
 if __name__ == '__main__':
 
