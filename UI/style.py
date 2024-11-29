@@ -36,6 +36,7 @@ class TaxiAppStyle(Style):
 
     def labelStyle(self):
         self.configure('TLabel', background=const_secondary,foreground= const_font_colour)
+        self.configure('Secondary_Frame.TLabel', background=const_main_bg, foreground= const_font_colour)
         self.configure('loginTitleLabel.TLabel', background=const_main_bg,foreground= const_font_colour, font=('Helvetica', 24))
         self.configure('mainBgText.TLabel', background=const_main_bg,foreground= const_font_colour)
 

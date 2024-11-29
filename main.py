@@ -82,6 +82,6 @@ frames = (StartPage,)
 if __name__ == '__main__':
 
     app = tkinterApp(frames)
-    # app.geometry('800x500')
+    app.geometry('1200x600+100+0')
 
     app.mainloop()
