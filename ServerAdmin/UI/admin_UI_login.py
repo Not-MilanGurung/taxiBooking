@@ -1,6 +1,7 @@
 from tkinter import ttk, StringVar, messagebox
-from Database.login_register_user import login
-from UI.customer_UI import Customer
+from Database.sqlite_mid import login
+from UI.admin_UI import Admin
+
 class Login(ttk.Frame):
             
      
@@ -39,13 +40,6 @@ class Login(ttk.Frame):
 
         button1 = ttk.Button(self, text='Login', command=self.check)
         button1.grid(row=3, column=0, padx=10, pady=10)
-
-        register_text = ttk.Label(self, text='New User? Make a new account', style='mainBgText.TLabel')
-        register_text.grid(row=4, column=0, pady=(40,5))
-        button2 = ttk.Button(self, text='Register', command = lambda : root.show_frame(cont='Register'))
-        button2.grid(row=5, column=0, padx=10, pady=10)
-    
-
    
 
     def check(self):
@@ -62,11 +56,12 @@ class Login(ttk.Frame):
         else:     
             res = login(username, password)
 
-            if res == True:
-                self.root.show_frame(Page=Customer(self.parent, self.root, username))
+            if res == username:
+                self.root.show_frame(Admin(self.parent.__dict__['mainframe'], self.root, username))
+                self.parent.destroy()
 
             else:
                 messagebox.showerror('Error', res)
-                print('else')
+
 
 

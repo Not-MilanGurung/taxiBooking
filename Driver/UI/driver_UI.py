@@ -13,8 +13,6 @@ class SideNavigationMenu(ttk.Frame):
         super().__init__(parent, style='SideBar.TFrame')
 
         ttk.Label(self, text=f'Welcome {parent.username}', width=20, justify='center').grid(row=0, column=0, sticky='ew', pady=(40,20), padx=10)
-        book = ttk.Button(self, text='Book a ride', command=lambda :parent.show_page('booking'))
-        book.grid(row=1, sticky='ew', pady=20, padx=10)
         current = ttk.Button(self, text='Current ride', command=lambda :parent.show_page('currentRide'))
         current.grid(row=2, sticky='ew', pady=20, padx=10)
         history = ttk.Button(self, text='Ride history', command=lambda :parent.show_page('rideHistory'))
@@ -22,53 +20,6 @@ class SideNavigationMenu(ttk.Frame):
         profile = ttk.Button(self, text='Profile', command=lambda :parent.show_page('profile'))
         profile.grid(row=4, sticky='ew', pady=20, padx=10)
     
-
-class Booking(ttk.Frame):
-    def __init__(self, parent, root):
-        super().__init__(parent, style='MainBar.TFrame')
-        ttk.Label(self, text='Booking').grid(row=0, column=0, sticky='')
-
-        pickup =ttk.Label(self, style='Secondary_Frame.TLabel')
-        pickup.grid(row=1, column=0, sticky='ew', padx=20, pady=20, ipady=10)
-        pickup.rowconfigure(0, weight=1)
-        ttk.Label(pickup, text='Pickup Location', style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
-        self.pickup = StringVar()
-        ttk.Entry(pickup, textvariable=self.pickup).grid(row=0, column=1, padx=20)
-
-        dropoff = ttk.Label(self, style='Secondary_Frame.TLabel')
-        dropoff.grid(row=2, column=0, sticky='ew', padx=20, pady=20, ipady=10)
-        dropoff.rowconfigure(0, weight=1)
-        ttk.Label(dropoff, text='Dropoff Location',style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20, sticky='we')
-        self.dropoff = StringVar()
-        ttk.Entry(dropoff, textvariable=self.dropoff).grid(row=0, column=1, padx=20, sticky='we')
-
-        dateLabel = ttk.Label(self, style='Secondary_Frame.TLabel')
-        dateLabel.grid(row=1, column=1, rowspan=3, sticky='ew', padx=20, pady=20, ipady=10, ipadx=10)
-        dateLabel.rowconfigure((0,1), weight=1)
-        dateLabel.columnconfigure(0, weight=1)
-        ttk.Label(dateLabel, text='Date', style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20, pady=10, sticky='we')
-        self.cal = Calendar(dateLabel, mindate=date.today(), maxdate=(date.today()+ timedelta(days=30)))
-        self.cal.grid(row=1, column=0)
-
-        timeLabel = ttk.Label(self, style='Secondary_Frame.TLabel')
-        timeLabel.grid(row=3, column=0, padx=20, pady = 20, sticky='we', ipadx=20, ipady=20)
-        timeLabel.rowconfigure((0,1), weight=1)
-        timeLabel.columnconfigure((0,1), weight=1)
-        ttk.Label(timeLabel, text='Hour', style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
-        self.timeHour = IntVar(value=datetime.now().time().hour)
-        ttk.Spinbox(timeLabel, from_=0, to=23, textvariable=self.timeHour).grid(row=0, column=1, padx=20)
-        ttk.Label(timeLabel, text='Minuate', style='Secondary_Frame.TLabel').grid(row=1, column=0, padx=20)
-        self.timeMin = IntVar(value=datetime.now().time().minute)
-        ttk.Spinbox(timeLabel, from_=0, to=59, textvariable=self.timeMin).grid(row=1, column=1, padx=20)
-
-        ttk.Button(self, command=self.book, text='Book').grid(row=5, column=0, columnspan=2)
-
-    def book(self):
-        try:
-            data = [self.pickup.get(), self.dropoff.get(), self.cal.get_date(), self.timeHour.get(), self.timeMin.get()]
-            print(data)
-        except ValueError:
-            pass
 
 class CurrentRide(ttk.Frame):
     def __init__(self, parent, root):
@@ -97,18 +48,18 @@ class CurrentRide(ttk.Frame):
         self.time = StringVar()
         ttk.Label(date, textvariable=self.time, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
 
-        driverDetail = ttk.Label(self, style='Secondary_Frame.TLabel')
-        driverDetail.grid(row=2, column=0, sticky='ew', padx=20, pady=20, ipady=20)
-        driverDetail.rowconfigure((0,1), weight=1)
-        driverDetail.columnconfigure(1, minsize=200)
+        customerDetail = ttk.Label(self, style='Secondary_Frame.TLabel')
+        customerDetail.grid(row=2, column=0, sticky='ew', padx=20, pady=20, ipady=20)
+        customerDetail.rowconfigure((0,1), weight=1)
+        customerDetail.columnconfigure(1, minsize=200)
         
-        ttk.Label(driverDetail, text="Driver's Name:",style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
-        self.driverName = StringVar()
-        ttk.Label(driverDetail, textvariable=self.driverName, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
+        ttk.Label(customerDetail, text="Customer's Name:",style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
+        self.customerName = StringVar()
+        ttk.Label(customerDetail, textvariable=self.customerName, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
 
-        ttk.Label(driverDetail, text='Phone Number: ',style='Secondary_Frame.TLabel').grid(row=1, column=0, padx=20)
+        ttk.Label(customerDetail, text='Phone Number: ',style='Secondary_Frame.TLabel').grid(row=1, column=0, padx=20)
         self.driverPhone = StringVar()
-        ttk.Label(driverDetail, textvariable=self.driverPhone, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
+        ttk.Label(customerDetail, textvariable=self.driverPhone, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
 
         # ttk.Label(time, text='Photo: ',style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
         # self.time = StringVar()
@@ -174,7 +125,7 @@ class Profile(ttk.Frame):
 
 
 
-class Customer(ttk.Frame):
+class Driver(ttk.Frame):
 
     def __init__(self, mainframe, root, username):
 
@@ -190,9 +141,6 @@ class Customer(ttk.Frame):
         side_navigation = SideNavigationMenu(self, root)
         side_navigation.grid(row=0,column=0, sticky='nsew', padx=(20,0), pady=20)
 
-        self.booking = Booking(self, root)
-        self.booking.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
-
         self.currentRide = CurrentRide(self, root)
         self.currentRide.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
@@ -202,7 +150,7 @@ class Customer(ttk.Frame):
         self.profile = Profile(self, root)
         self.profile.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
-        self.booking.tkraise()
+        self.currentRide.tkraise()
     
     def show_page(self, pageName):
         self.__dict__[pageName].tkraise()
@@ -225,7 +173,7 @@ if __name__ == '__main__':
     mainframe.columnconfigure(0, weight=1)
     mainframe.rowconfigure(0,weight=1)
 
-    test = Customer(mainframe, root, 'test')
+    test = Driver(mainframe, root, 'test')
     test.grid(row=0, column=0, sticky='nsew')
 
     root.mainloop()

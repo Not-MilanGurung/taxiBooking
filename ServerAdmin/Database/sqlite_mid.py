@@ -1,36 +1,37 @@
 from sqlite3 import connect, Connection
+from hashlib import pbkdf2_hmac
+from pathlib import Path
 
-con = connect("Database/user.db")
+con = connect("Database/database.db")
 
-# cur.execute("CREATE TABLE login(Id INTEGER PRIMARY KEY AUTOINCREMENT, UserName, Password, Phone, Address, Email, Name)")
-# cur.execute("DROP TABLE login")
 
 
 def login(user_name: str, password: str):
 
     cur = con.cursor()
 
-    res = cur.execute(f"SELECT Password FROM login WHERE UserName = '{user_name}'")
+    res = cur.execute(f"SELECT Salt, Hash  FROM admins WHERE Username = '{user_name}'")
     p = res.fetchone()
     if p is None:
         return 'UserName is not registered'
 
-    
-    # Check if the password matches
-    if p[0] != password:
+    hash = pbkdf2_hmac('sha256', password.encode() , p[0], 600_000) 
+
+    # Check if the hash matches
+    if p[1] != hash:
         return 'Incorrect password'
 
     
     # Login if the requirements are met
-    return True
+    return user_name
 
 
     
-def personal_detail( name , address: str, phone = 00,  email: str = '', con_in: Connection | None = None) :
+def personal_detail( name , address: str, phone = 00,  email: str = '') :
 
     cur = con.cursor()
 
-    query = f"SELECT phone from login where phone={phone}"
+    query = f"SELECT phone from customer where phone={phone}"
     res = cur.execute(query)
     if res.fetchone() is not(None):
         return 'The phone is already registered. Try logging in or using a different phone'
@@ -42,13 +43,13 @@ def account( username, password, personal: tuple , con_in: Connection | None = N
     cur = con.cursor()
     (name, address, phone, email) = personal
 
-    res = cur.execute(f"SELECT UserName from login where UserName='{username}'")  
+    res = cur.execute(f"SELECT UserName from customer where UserName='{username}'")  
     if res.fetchone() is not(None):
         return 'The username is taken, try another one'
     
 
     data = (username, password, phone, address, email, name)
-    cur.execute("INSERT INTO login(UserName, Password, Phone, Address, Email, Name) VALUES(?, ?, ?, ?, ?, ?)", data)
+    cur.execute("INSERT INTO customer(UserName, Password, Phone, Address, Email, Name) VALUES(?, ?, ?, ?, ?, ?)", data)
 
     # Commiting the operations into the database
     con.commit()
@@ -56,3 +57,6 @@ def account( username, password, personal: tuple , con_in: Connection | None = N
 
 def close_connection():
     con.close()
+
+if __name__ == '__main__':
+    print(login('Server Admin', 'taxi booking'))
