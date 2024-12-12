@@ -83,7 +83,7 @@ Email = 'server@admin.com'
 Fullname = 'Server D. Admin'
 
 try:
-    cur.execute('insert into admins (Username, Salt, Hash, FullName, Phone, Email) values(?, ?, ?, ?, ?, ?)',
+    cur.execute('insert into admins (Username, Salt, Hash, FullName, Phone, Email) values(?, ?, ?, ?, ?, ?,)',
                 (USERNAME, salt, hash, Fullname, Phone, Email))
     con.commit()
 except:
@@ -93,6 +93,12 @@ except:
 # hash1 = pbkdf2_hmac('sha256', p.encode(), salt, 10_000)
 # cur.execute('insert into customers (Username, Salt, Hash, FullName, Phone, Email, Address) values(?, ?, ?, ?, ?, ?, ?)',
 #             ('milan', salt, hash1, 'Milan Gurung', Phone, 'milan@gmail.com', 'Hattiban'))
+# p = '1234567890'
+# hash1 = pbkdf2_hmac('sha256', p.encode(), salt, 10_000)
+# cur.execute('insert into drivers (Username, Salt, Hash, FullName, Phone, Email, Address, LicenceNo, VehicleNo, VehicleType, VehicleDes, Status) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+#             ('milan', salt, hash1, 'Milan Gurung', Phone, 'milan@gmail.com', 'Hattiban', '006-0239009', 'BAGMATI A AA0001', 'Bike', 'Red Honda', 'AVAILABLE'))
+
+# cur.execute('UPDATE bookings SET DriverID = 1 WHERE BookingID = 5')
 
 # # cur.execute('drop table customers')
 # # cur.execute('drop table drivers')

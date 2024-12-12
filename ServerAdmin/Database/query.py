@@ -13,6 +13,22 @@ def select_table(user):
             table, idcolumn = 'admins' , 'AdminID'
     return table, idcolumn
 
+def ride_history(user, id):
+    table, idcolumn = select_table(user)
+    con = connect("file:Database/database.db?mode=ro", uri=True)
+    if table == 'customers': 
+        opptable = 'drivers'
+        oppidcolumn = 'DriverID'
+    elif table == 'drivers': 
+        opptable = 'customers'
+        oppidcolumn = 'CustomerID'
+    cur = con.cursor()
+
+    query = f"SELECT {opptable}.FullName, bookings.PickupLocation, bookings.DropoffLocation, bookings.Date, bookings.Time, bookings.Status FROM {opptable} JOIN bookings WHERE {opptable}.{oppidcolumn} = bookings.{oppidcolumn} AND bookings.{idcolumn} = {id}"
+    res = cur.execute(query).fetchall()
+    return ['HISTORY'] + res
+
+
 def login(user, msg_arr):
     table, idcolumn = select_table(user)
             
@@ -45,16 +61,27 @@ def login(user, msg_arr):
 
 def current_ride(user, id):
     table, idcolumn = select_table(user)
+    idget = ''
+    tableGet = ''
+    column = 'FullName, Phone' 
+    if idcolumn == 'CustomerID': 
+        idget = 'DriverID'
+        tableGet = 'drivers'
+        column += ', VehicleNo, VehicleType'
+
+    elif idcolumn == 'DriverID': 
+        idget = 'CustomerID'
+        tableGet = 'customers'
 
     con = connect("file:Database/database.db?mode=ro", uri=True)
     cur = con.cursor()
 
-    res = cur.execute(f"SELECT PickupLocation, DropoffLocation, Date, Time, DriverID FROM bookings where {idcolumn} = {id} and Status NOT IN ('CANCELLED','COMPLETED')").fetchone()
+    res = cur.execute(f"SELECT PickupLocation, DropoffLocation, Date, Time, {idget} FROM bookings where {idcolumn} = {id} and Status NOT IN ('CANCELLED','COMPLETED')").fetchone()
     if res is None: return ['CURRENT_RIDE', None]
 
     out = [res[0], res[1], res[2], res[3]]
     if res[4] is not None:
-        res = cur.execute(f'SELECT FullName, Phone, VehicleNo, VehicleType FROM drivers where DriverID = {res[4]}').fetchone()
+        res = cur.execute(f'SELECT {column} FROM {tableGet} where {idget} = {res[4]}').fetchone()
         out += list(res)
     con.close()
     out = ['CURRENT_RIDE'] + out

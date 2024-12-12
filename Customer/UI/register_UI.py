@@ -1,5 +1,5 @@
 from tkinter import ttk, messagebox
-
+from threading import Thread
 REGISTER = ['CUSTOMER','REGISTER']
 
 class Register(ttk.Frame):
@@ -113,15 +113,22 @@ class Register(ttk.Frame):
         data = [userName, password, fullName,  phone, email, address]
         self.store(data)
 
-            
-    def store(self, data):
-        data = REGISTER + data
-        self.root.send_to_server(data)
-        res = self.root.recive_from_server()
-        if res == 'Sucess':
+    def recive_thread(self):
+        self.res = self.root.recive_from_server()
+        self.recive()
+
+    def recive(self): 
+        if self.res == 'Sucess':
             messagebox.showinfo('Successfull', 'Account created, go to login page')       
         else:
-            messagebox.showerror('Error', res)
+            messagebox.showerror('Error', self.res)
+
+    def store(self, data):
+        self.res = 'Did not recive any data'
+        data = REGISTER + data
+        self.root.send_to_server(data)
+        thread = Thread(target=self.recive_thread)
+        thread.start()
 
         
     

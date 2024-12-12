@@ -49,12 +49,17 @@ class Login(ttk.Frame):
 
     def login(self, username, password):
         self.root.send_to_server(['CUSTOMER',LOGIN, username, password])
-        return self.root.recive_from_server()
-   
+        thread = Thread(target=self.recive_process)
+        thread.start()
+
+    def recive_process(self):
+        self.res = self.root.recive_from_server() 
+        self.recive()
 
     def check(self):
         username = self.username.get()
         password = self.password.get()
+        self.res = 'No data' 
         if (username == ''):
             messagebox.showerror('Invalid Input', 'Username can not be empty')
 
@@ -64,14 +69,14 @@ class Login(ttk.Frame):
         elif len(password) < 8: 
             messagebox.showerror('Invalid password', 'The password must be 8 characters long')
         else:     
-            res = self.login(username, password)
+            self.login(username, password)
 
+    def recive(self):
+        if self.res == 'Sucess':
+            self.root.show_frame(frame=Customer(self.parent.mainframe, self.root))
 
-            if res == 'Sucess':
-                self.root.show_frame(frame=Customer(self.parent.mainframe, self.root))
-
-            else:
-                messagebox.showerror('Error', res)
+        else:
+                messagebox.showerror('Error', self.res)
 
 
 

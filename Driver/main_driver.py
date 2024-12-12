@@ -1,6 +1,5 @@
 
 import tkinter as tk
-import pickle
 from tkinter import ttk, messagebox
 from Networking.client import Client
 from UI.login_UI import Login
@@ -45,10 +44,18 @@ class tkinterApp(tk.Tk):
         frame.tkraise()
 
     def send_to_server(self, msg: list[any]):
-        self.con.sendToServer(msg)
+        try:
+            self.con.sendToServer(msg)
+        except BrokenPipeError:
+            messagebox.showerror('Disconnected','Lost connection with the server.\nTrying again')
+            self.connect_server()
     
     def recive_from_server(self):
-        return self.con.recive()
+        try:
+            return self.con.recive()
+        except BrokenPipeError:
+            messagebox.showerror('Disconnected','Lost connection with the server.\nTrying again')
+            self.connect_server()
 
     def disconnect_server(self):
         self.con.disconnect()
@@ -73,6 +80,7 @@ if __name__ == '__main__':
     app = tkinterApp()
     
     try:
+        app.title('Taxi Booking: Driver App')
         app.mainloop()
         app.disconnect_server()
         print('Disconnected from server')

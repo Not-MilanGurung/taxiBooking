@@ -1,6 +1,6 @@
 
 import tkinter as tk
-import pickle
+
 from tkinter import ttk, messagebox
 from Networking.client import Client
 from UI.register_UI import Register
@@ -46,9 +46,13 @@ class tkinterApp(tk.Tk):
         frame.tkraise()
 
     def send_to_server(self, msg: list[any]):
-        self.con.sendToServer(msg)
+        try:
+            self.con.sendToServer(msg)
+        except BrokenPipeError:
+            self.connect_server()
     
     def recive_from_server(self):
+
         return self.con.recive()
 
     def disconnect_server(self):

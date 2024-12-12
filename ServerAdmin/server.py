@@ -15,7 +15,7 @@ REGISTER = 'REGISTER'
 BOOK = 'BOOK'
 CURRENT_RIDE = 'CURRENT_RIDE'
 CANCEL = 'CANCEL'
-
+HISTORY = 'HISTORY'
 
 class Server(socket.socket):
 
@@ -29,8 +29,7 @@ class Server(socket.socket):
             pass
     
     def classify_user(self, message):
-
-        if message[0] == ('CUSTOMER' or 'DRIVER' or 'ADMIN'):
+        if message[0] in ('CUSTOMER' ,'DRIVER' ,'ADMIN'):
             return message[0], message[1:]
         return False, None
 
@@ -83,6 +82,8 @@ class Server(socket.socket):
                 self.send(Query.current_ride(user, id), con)
             if msg[0] == CANCEL:
                 self.send(Query.cancel_ride(user, id), con)
+            if msg[0] == HISTORY:
+                self.send(Query.ride_history(user, id), con)
 
 
     def recive(self, con):

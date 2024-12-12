@@ -1,6 +1,6 @@
 from tkinter import ttk, StringVar, messagebox
-from UI.customer_UI import Customer
 from threading import Thread
+from UI.driver_UI import Driver
 
 LOGIN = 'LOGIN'
 class Login(ttk.Frame):
@@ -42,14 +42,16 @@ class Login(ttk.Frame):
         button1 = ttk.Button(self, text='Login', command=self.check)
         button1.grid(row=3, column=0, padx=10, pady=10)
 
-        register_text = ttk.Label(self, text='New User? Make a new account', style='mainBgText.TLabel')
-        register_text.grid(row=4, column=0, pady=(40,5))
-        button2 = ttk.Button(self, text='Register', command = lambda : parent.show_frame('registerFrame'))
-        button2.grid(row=5, column=0, padx=10, pady=10)
 
     def login(self, username, password):
-        self.root.send_to_server(['CUSTOMER',LOGIN, username, password])
-        return self.root.recive_from_server()
+        self.res = 'No data recived'
+        self.root.send_to_server(['DRIVER',LOGIN, username, password])
+        thread = Thread(target=self.recive_thread)
+        thread.start()
+    
+    def recive_thread(self):
+        self.res =  self.root.recive_from_server()
+        self.recived()
    
 
     def check(self):
@@ -64,14 +66,15 @@ class Login(ttk.Frame):
         elif len(password) < 8: 
             messagebox.showerror('Invalid password', 'The password must be 8 characters long')
         else:     
-            res = self.login(username, password)
+            self.login(username, password)
 
+    def recived(self):
+        if self.res == 'Sucess':
+            username = self.username.get()
+            self.root.show_frame(frame=Driver(self.parent.mainframe, self.root, username))
 
-            if res == 'Sucess':
-                self.root.show_frame(frame=Customer(self.parent.mainframe, self.root))
-
-            else:
-                messagebox.showerror('Error', res)
+        else:
+            messagebox.showerror('Error', self.res)
 
 
 

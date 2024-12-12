@@ -1,9 +1,9 @@
-from tkinter import ttk, N,E,S,W, Tk, StringVar, IntVar
-from tkcalendar import Calendar
-from datetime import date, timedelta, datetime
+from tkinter import ttk, N,E,S,W, Tk, StringVar, messagebox
+from threading import Thread
 
-
-
+CURRENT_RIDE = 'CURRENT_RIDE'
+PROFILE = 'PROFILE'
+HISTORY = 'HISTORY'
 
 class SideNavigationMenu(ttk.Frame):
 
@@ -23,6 +23,7 @@ class SideNavigationMenu(ttk.Frame):
 
 class CurrentRide(ttk.Frame):
     def __init__(self, parent, root):
+        self.root = root
         super().__init__(parent, style='MainBar.TFrame')
         ttk.Label(self, text='Current Ride').grid(row=0, column=0, sticky='')
 
@@ -58,26 +59,70 @@ class CurrentRide(ttk.Frame):
         ttk.Label(customerDetail, textvariable=self.customerName, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
 
         ttk.Label(customerDetail, text='Phone Number: ',style='Secondary_Frame.TLabel').grid(row=1, column=0, padx=20)
-        self.driverPhone = StringVar()
-        ttk.Label(customerDetail, textvariable=self.driverPhone, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
+        self.customerPhone = StringVar()
+        ttk.Label(customerDetail, textvariable=self.customerPhone, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
+        
+        self.get_info()
+
+        ttk.Button(self, text='Refresh', command=self.get_info).grid(row=3, padx=20, pady=20)
 
         # ttk.Label(time, text='Photo: ',style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
         # self.time = StringVar()
         # ttk.Label(time, textvariable=self.dropoff, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
+    
+    def get_info(self):
+        self.res = [None] * 10
+        self.root.send_to_server([CURRENT_RIDE, None])
+        thread = Thread(target=self.recive_thread)
+        thread.start()
+
+    # Thread that waits for server's reply
+    def recive_thread(self):
+        self.res = self.root.recive_from_server()
+        self.recive()
+    # Read then Load data after reciving from server
+    def recive(self):
+        print(self.res)
+        if self.res[1] is not None:
+            self.pickup.set(self.res[1])
+            self.dropoff.set(self.res[2])
+            self.date.set(self.res[3])
+            self.time.set(self.res[4])
+
+            self.customerName.set(self.res[5])
+            self.customerPhone.set(self.res[6])
+        else:
+            self.pickup.set('')
+            self.dropoff.set('')
+            self.date.set('')
+            self.time.set('')
+
+            self.customerName.set('')
+            self.customerPhone.set('')
+
+
+
 
 class RideHistory(ttk.Frame):
     def __init__(self, parent, root):
+        self.root = root
         super().__init__(parent, style='MainBar.TFrame')
         ttk.Label(self, text='RideHistory').grid(row=0, column=0, sticky='')
+        # Ride history tree
         columns= list(range(6))
-        self.tree = ttk.Treeview(self, columns=columns, show='headings')
+        self.tree = ttk.Treeview(self, columns=columns, show='headings', selectmode='browse')
         self.tree.grid(row=3, column=0)
         self.treeInitlise()
 
+        scroll = ttk.Scrollbar(self, command=self.tree.yview)
+        scroll.grid(row=3, column=1, sticky='ns')
+        self.tree.configure(yscrollcommand=scroll.set)
+
+        ttk.Button(self, text='Refreash', command=self.get_data).grid(row=1, column=0, pady = 20)
+
         
     def treeInitlise(self):
-        self.tree.heading(0, text='ID')
-        self.tree.column(0, width=60)
+        self.tree.heading(0, text='Customer Name')
 
         self.tree.heading(1, text='Pickup Location')
         self.tree.heading(2, text='Dropoff Location')
@@ -89,13 +134,27 @@ class RideHistory(ttk.Frame):
         self.tree.column(4, width=60)
 
         self.tree.heading(5, text='Status')
-        self.tree.column(5, width=60)
+        self.tree.column(5, width=150)
         #test
-        data = (12, 'Kupondole', 'Hattiban', '11/11/24','13:45', 'Done')
-        self.tree.insert('', 'end', values=data)
+    def get_data(self):
+        self.tree.delete(*self.tree.get_children())
+        self.root.send_to_server([HISTORY,None])
+        thread = Thread(target=self.recive_thread)
+        thread.start()
+
+    def recive_thread(self):
+        self.res = self.root.recive_from_server()
+        self.recive()
+    
+    def recive(self):
+        print(self.res)
+        if self.res[0] == HISTORY:
+            for row in self.res[1:]:
+                self.tree.insert('', 'end', values=row)
 
 class Profile(ttk.Frame):
     def __init__(self, parent, root):
+        self.root = root
         super().__init__(parent, style='MainBar.TFrame')
         self.columnconfigure(0, weight=1)
         ttk.Label(self, text='Profile').grid(row=0, column=0, sticky='')
@@ -106,22 +165,30 @@ class Profile(ttk.Frame):
         personal.columnconfigure(1, minsize=200)
         # Name Labels
         ttk.Label(personal, text='Name: ', style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
-        self.name = StringVar(value='Test')
+        self.name = StringVar()
         ttk.Label(personal, textvariable=self.name, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
         # Address Labels
         ttk.Label(personal, text='Address:',style='Secondary_Frame.TLabel').grid(row=1, column=0, padx=20)
-        self.address = StringVar(value='KTM')
+        self.address = StringVar()
         ttk.Label(personal, textvariable=self.address, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
         # Email Labels
         ttk.Label(personal, text='Email:',style='Secondary_Frame.TLabel').grid(row=2, column=0, padx=20)
-        self.email = StringVar(value='example@gmail.com')
+        self.email = StringVar()
         ttk.Label(personal, textvariable=self.email, style='Secondary_Frame.TLabel').grid(row=2, column=1, padx=20)
         # Phone Labels
         ttk.Label(personal, text='Phone No.: ',style='Secondary_Frame.TLabel').grid(row=3, column=0, padx=20)
-        self.phone = StringVar(value=12345)
+        self.phone = StringVar()
         ttk.Label(personal, textvariable=self.phone, style='Secondary_Frame.TLabel').grid(row=3, column=1, padx=20)
-
-       
+        self.get_info()
+    def get_info(self):
+        res = self.root.recive_from_server()
+        if res[0] == PROFILE:
+            self.name.set(res[2])
+            self.phone.set(res[3])
+            self.email.set(res[4])
+            self.address.set(res[5])
+        else:
+            messagebox.showerror('Error', 'Could not get profile info')
 
 
 
@@ -141,14 +208,15 @@ class Driver(ttk.Frame):
         side_navigation = SideNavigationMenu(self, root)
         side_navigation.grid(row=0,column=0, sticky='nsew', padx=(20,0), pady=20)
 
+        self.profile = Profile(self, root)
+        self.profile.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
+
         self.currentRide = CurrentRide(self, root)
         self.currentRide.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
         self.rideHistory = RideHistory(self, root)
         self.rideHistory.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
-        self.profile = Profile(self, root)
-        self.profile.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
         self.currentRide.tkraise()
     

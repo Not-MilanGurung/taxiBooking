@@ -3,19 +3,19 @@ from hashlib import pbkdf2_hmac
 from pathlib import Path
 
 con = connect("Database/database.db")
+cur = con.cursor()
 
 
 
 def login(user_name: str, password: str):
 
-    cur = con.cursor()
 
     res = cur.execute(f"SELECT Salt, Hash  FROM admins WHERE Username = '{user_name}'")
     p = res.fetchone()
     if p is None:
         return 'UserName is not registered'
 
-    hash = pbkdf2_hmac('sha256', password.encode() , p[0], 600_000) 
+    hash = pbkdf2_hmac('sha256', password.encode() , p[0], 10_000) 
 
     # Check if the hash matches
     if p[1] != hash:
@@ -26,7 +26,31 @@ def login(user_name: str, password: str):
     return user_name
 
 
-    
+def current_rides():
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status NOT IN ('CANCELLED', 'COMPLETED') AND DriverID IS NOT NULL"
+    res = cur.execute(query)
+    return res
+
+def unassigined_rides():
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status NOT IN ('CANCELLED', 'COMPLETED') AND DriverID IS NULL"
+    res = cur.execute(query)
+    return res
+
+def double_booked_rides():
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status NOT IN ('CANCELLED', 'COMPLETED') GROUP BY DriverID HAVING COUNT(DriverID)>1"
+    res = cur.execute(query)
+    return res
+
+def profile(username):
+    query = f"SELECT Username, FullName, Phone, Email FROM admins WHERE Username = '{username}'"
+    res = cur.execute(query).fetchone()
+    return res
+
+def driver_list():
+    query = "SELECT DriverID, FullName, VehicleType, Status FROM drivers GROUP BY Status"
+    res = cur.execute(query).fetchall()
+    return res
+
 def personal_detail( name , address: str, phone = 00,  email: str = '') :
 
     cur = con.cursor()
@@ -38,22 +62,15 @@ def personal_detail( name , address: str, phone = 00,  email: str = '') :
     
     return (name, address, phone, email)
 
-def account( username, password, personal: tuple , con_in: Connection | None = None ):  
+def assign_driver(bookingID, driverID):
+    query = f"UPDATE bookings SET DriverID = {driverID} WHERE BookingID = {bookingID}"
+    try:
+        cur.execute(query)
+        con.commit()
+        return 'Assigined'
+    except:
+        return 'Error occured'
 
-    cur = con.cursor()
-    (name, address, phone, email) = personal
-
-    res = cur.execute(f"SELECT UserName from customer where UserName='{username}'")  
-    if res.fetchone() is not(None):
-        return 'The username is taken, try another one'
-    
-
-    data = (username, password, phone, address, email, name)
-    cur.execute("INSERT INTO customer(UserName, Password, Phone, Address, Email, Name) VALUES(?, ?, ?, ?, ?, ?)", data)
-
-    # Commiting the operations into the database
-    con.commit()
-    return 'The account has been created. Go to the login page.'
 
 def close_connection():
     con.close()

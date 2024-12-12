@@ -1,9 +1,11 @@
 from tkinter import ttk, N,E,S,W, Tk, StringVar, IntVar, messagebox
 from tkcalendar import Calendar
 from datetime import date, timedelta, datetime, time
+from threading import Thread
 
 BOOK = 'BOOK'
 CURRENT_RIDE = 'CURRENT_RIDE'
+HISTORY = 'HISTORY'
 
 class SideNavigationMenu(ttk.Frame):
 
@@ -82,16 +84,23 @@ class Booking(ttk.Frame):
         hour = self.timeHour.get()
         min = self.timeMin.get()
         time = f'{hour}:{min}:00'
+        self.res = ['Did not recive any data',]
 
         data = [BOOK, pickup, dropoff, date, time]
         self.root.send_to_server(data)
+        thread = Thread(target=self.recive_thread)
+        thread.start()
 
-        res = self.root.recive_from_server()
-        if res[0] == 'Sucess':
+    def recive_thread(self):
+        self.res = self.root.recive_from_server()
+        self.recive()
+
+    def recive(self):
+        if self.res[0] == 'Sucess':
             messagebox.showinfo('Sucessful','Booked sucessfully')
             self.parent.starting_data_current()
         else:
-            messagebox.showerror('Error', res[0])
+            messagebox.showerror('Error', self.res[0])
 
 
         
@@ -138,6 +147,7 @@ class CurrentRide(ttk.Frame):
         ttk.Label(driverDetail, textvariable=self.driverPhone, style='Secondary_Frame.TLabel').grid(row=1, column=1, padx=20)
 
         ttk.Button(driverDetail, text='Cancel', command=self.cancel).grid(row=2, column=1, pady=20)
+        ttk.Button(driverDetail, text='Refresh', command=parent.starting_data_current).grid(row=2, column=2, pady=20)
 
         # ttk.Label(time, text='Photo: ',style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
         # self.time = StringVar()
@@ -146,31 +156,48 @@ class CurrentRide(ttk.Frame):
         res = messagebox.askquestion('Cancel', 'Do you want to cancel the booking?')
         if res == 'yes':
             self.root.send_to_server(['CANCEL',None])
-            ans = self.root.recive_from_server()
-            if ans == 'CANCELLED':
-                messagebox.showinfo('Cancelled', 'Booking cancelled') 
-                self.date.set('')   
-                self.pickup.set('')   
-                self.dropoff.set('')   
-                self.time.set('')   
-                self.driverPhone.set('')   
-                self.driverName.set('') 
-            else:
-                messagebox.showerror('Error', ans)  
+            thread = Thread(target=self.recive_thread)
+            thread.start()
+
+    # The thread that awaits for server's reply 
+    def recive_thread(self):
+        self.ans = self.root.recive_from_server()
+        self.recive()
+    
+    # Method after reciving a reply from the server
+    def recive(self):
+        if self.ans == 'CANCELLED':
+            messagebox.showinfo('Cancelled', 'Booking cancelled') 
+            self.date.set('')   
+            self.pickup.set('')   
+            self.dropoff.set('')   
+            self.time.set('')   
+            self.driverPhone.set('')   
+            self.driverName.set('') 
+        else:
+            messagebox.showerror('Error', self.ans)  
+
 
 class RideHistory(ttk.Frame):
     def __init__(self, parent, root):
+        self.root = root
         super().__init__(parent, style='MainBar.TFrame')
         ttk.Label(self, text='RideHistory').grid(row=0, column=0, sticky='')
+        # Ride history tree
         columns= list(range(6))
-        self.tree = ttk.Treeview(self, columns=columns, show='headings')
+        self.tree = ttk.Treeview(self, columns=columns, show='headings', selectmode='browse')
         self.tree.grid(row=3, column=0)
         self.treeInitlise()
 
+        scroll = ttk.Scrollbar(self, command=self.tree.yview)
+        scroll.grid(row=3, column=1, sticky='ns')
+        self.tree.configure(yscrollcommand=scroll.set)
+
+        ttk.Button(self, text='Refreash', command=self.get_data).grid(row=1, column=0, pady = 20)
+
         
     def treeInitlise(self):
-        self.tree.heading(0, text='ID')
-        self.tree.column(0, width=60)
+        self.tree.heading(0, text='Driver Name')
 
         self.tree.heading(1, text='Pickup Location')
         self.tree.heading(2, text='Dropoff Location')
@@ -182,10 +209,23 @@ class RideHistory(ttk.Frame):
         self.tree.column(4, width=60)
 
         self.tree.heading(5, text='Status')
-        self.tree.column(5, width=60)
+        self.tree.column(5, width=150)
         #test
-        data = (12, 'Kupondole', 'Hattiban', '11/11/24','13:45', 'Done')
-        self.tree.insert('', 'end', values=data)
+    def get_data(self):
+        self.tree.delete(*self.tree.get_children())
+        self.root.send_to_server([HISTORY,None])
+        thread = Thread(target=self.recive_thread)
+        thread.start()
+
+    def recive_thread(self):
+        self.res = self.root.recive_from_server()
+        self.recive()
+    
+    def recive(self):
+        print(self.res)
+        if self.res[0] == HISTORY:
+            for row in self.res[1:]:
+                self.tree.insert('', 'end', values=row)
 
 class Profile(ttk.Frame):
     def __init__(self, parent, root):
@@ -236,8 +276,6 @@ class Customer(ttk.Frame):
         self.booking = Booking(self, root)
         self.booking.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
-        self.currentRide = CurrentRide(self, root)
-        self.currentRide.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
         self.rideHistory = RideHistory(self, root)
         self.rideHistory.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
@@ -245,24 +283,50 @@ class Customer(ttk.Frame):
         self.profile = Profile(self, root)
         self.profile.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
+        self.currentRide = CurrentRide(self, root)
+        self.currentRide.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
         self.booking.tkraise()
         self.starting_data_profile()
         self.starting_data_current()
+
     
     def show_page(self, pageName):
         self.__dict__[pageName].tkraise()
 
-    def starting_data_current(self):
-        self.root.send_to_server([CURRENT_RIDE, None])
-        current = self.root.recive_from_server()
+    def recive_thread_current(self):
+        self.res = self.root.recive_from_server()
+        self.recive_current()
 
+    def starting_data_current(self):
+        self.res = ['No data recived',]
+        self.root.send_to_server([CURRENT_RIDE, None])
+        thread = Thread(target=self.recive_thread_current)
+        thread.start()
+
+    def recive_current(self):
+        current = self.res
         if current[0] == CURRENT_RIDE and current[1] is not None:
             self.currentRide.__dict__['pickup'].set(current[1]) 
             self.currentRide.__dict__['dropoff'].set(current[2]) 
             self.currentRide.__dict__['date'].set(current[3]) 
             self.currentRide.__dict__['time'].set(current[4]) 
+            try:
+                self.currentRide.__dict__['driverName'].set(current[5])
+                self.currentRide.__dict__['driverPhone'].set(current[6])
+            except:
+                pass
+        else: 
+            self.currentRide.__dict__['pickup'].set("") 
+            self.currentRide.__dict__['dropoff'].set('') 
+            self.currentRide.__dict__['date'].set('') 
+            self.currentRide.__dict__['time'].set('') 
+            self.currentRide.__dict__['driverName'].set('')
+            self.currentRide.__dict__['driverPhone'].set('')
+
 
     def starting_data_profile(self):
+        self.res = ['No data recived']
+    
         profile = self.root.recive_from_server()
         self.profile.__dict__['name'].set(profile[2])
         self.profile.__dict__['address'].set(profile[5])
