@@ -149,9 +149,6 @@ class CurrentRide(ttk.Frame):
         ttk.Button(driverDetail, text='Cancel', command=self.cancel).grid(row=2, column=1, pady=20)
         ttk.Button(driverDetail, text='Refresh', command=parent.starting_data_current).grid(row=2, column=2, pady=20)
 
-        # ttk.Label(time, text='Photo: ',style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
-        # self.time = StringVar()
-        # ttk.Label(time, textvariable=self.dropoff, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
     def cancel(self):
         res = messagebox.askquestion('Cancel', 'Do you want to cancel the booking?')
         if res == 'yes':
@@ -168,6 +165,7 @@ class CurrentRide(ttk.Frame):
     def recive(self):
         if self.ans == 'CANCELLED':
             messagebox.showinfo('Cancelled', 'Booking cancelled') 
+            # Clearing the labels
             self.date.set('')   
             self.pickup.set('')   
             self.dropoff.set('')   
@@ -210,7 +208,7 @@ class RideHistory(ttk.Frame):
 
         self.tree.heading(5, text='Status')
         self.tree.column(5, width=150)
-        #test
+
     def get_data(self):
         self.tree.delete(*self.tree.get_children())
         self.root.send_to_server([HISTORY,None])
@@ -222,7 +220,6 @@ class RideHistory(ttk.Frame):
         self.recive()
     
     def recive(self):
-        print(self.res)
         if self.res[0] == HISTORY:
             for row in self.res[1:]:
                 self.tree.insert('', 'end', values=row)

@@ -2,8 +2,7 @@ import socket
 import threading
 import pickle
 import Database.query as Query
-
-
+import sys
 
 
 HEADER = 64
@@ -16,18 +15,21 @@ BOOK = 'BOOK'
 CURRENT_RIDE = 'CURRENT_RIDE'
 CANCEL = 'CANCEL'
 HISTORY = 'HISTORY'
+ASSIGINED = 'ASSIGINED'
 
 class Server(socket.socket):
 
     def __init__(self, family: socket.AddressFamily = socket.AF_INET, type: socket.SocketKind = socket.SOCK_STREAM, port: int = PORT , server: str = SERVER):
         super().__init__(family, type)
         self.bind((server, port))
-        try:
-            print (f'[SERVER]: Server started {server} {port}')
-            self.start()
-        except KeyboardInterrupt:
-            pass
-    
+
+        print (f'[SERVER]: Server started {server} {port}')
+        self.start()
+
+    def singal_handler(sig, frame):
+        print('Keyboard')
+        sys.exit(0)
+
     def classify_user(self, message):
         if message[0] in ('CUSTOMER' ,'DRIVER' ,'ADMIN'):
             return message[0], message[1:]
@@ -80,6 +82,8 @@ class Server(socket.socket):
                 continue
             if msg[0] == CURRENT_RIDE:
                 self.send(Query.current_ride(user, id), con)
+            if msg[0] == ASSIGINED:
+                self.send(Query.current_rides_driver(user, id), con)    
             if msg[0] == CANCEL:
                 self.send(Query.cancel_ride(user, id), con)
             if msg[0] == HISTORY:
@@ -116,16 +120,28 @@ class Server(socket.socket):
     def start(self):
         self.listen()
         while True:
-            con, addr = self.accept()
+            try:
+                print('Hello')
+                con, addr = self.accept()
+                print('Hello')
+            except KeyboardInterrupt:
+                print('Hello')
+                break
             thread = threading.Thread(target=self.identify_client, args=(con, addr))
+            thread.daemon = True
             thread.start()
 
+
+
+
     def stop(self):
+        print('Stopping server')
         self.close()
 
 if __name__ == '__main__':
     server = Server()
     server.stop()
+
     print('[SERVER STOPPED]')
 
 

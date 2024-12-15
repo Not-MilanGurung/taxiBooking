@@ -24,7 +24,8 @@ def ride_history(user, id):
         oppidcolumn = 'CustomerID'
     cur = con.cursor()
 
-    query = f"SELECT {opptable}.FullName, bookings.PickupLocation, bookings.DropoffLocation, bookings.Date, bookings.Time, bookings.Status FROM {opptable} JOIN bookings WHERE {opptable}.{oppidcolumn} = bookings.{oppidcolumn} AND bookings.{idcolumn} = {id}"
+    query = f'''SELECT {opptable}.FullName, bookings.PickupLocation, bookings.DropoffLocation, bookings.Date, bookings.Time, bookings.Status FROM {opptable} 
+                JOIN bookings WHERE {opptable}.{oppidcolumn} = bookings.{oppidcolumn} AND bookings.{idcolumn} = {id}'''
     res = cur.execute(query).fetchall()
     return ['HISTORY'] + res
 
@@ -85,6 +86,23 @@ def current_ride(user, id):
         out += list(res)
     con.close()
     out = ['CURRENT_RIDE'] + out
+    return out
+
+def current_rides_driver(user, id):
+    idcolumn = 'DriverID'
+    tableGet = 'customers'
+    idget = 'CustomerID'
+    tableGet = 'customers'
+
+    con = connect("file:Database/database.db?mode=ro", uri=True)
+    cur = con.cursor()
+
+    query = f'''SELECT {tableGet}.FullName, bookings.PickupLocation, bookings.DropoffLocation, bookings.Date, 
+                bookings.Time, bookings.Status FROM {tableGet} 
+                JOIN bookings WHERE {tableGet}.{idget} = bookings.{idget} AND bookings.{idcolumn} = {id} AND bookings.Status NOT IN ('CANCELLED','COMPLETED')'''
+    out = cur.execute(query).fetchall()
+    con.close()
+    out = ['ASSIGINED'] + out
     return out
 
 def profile_info(user, id):

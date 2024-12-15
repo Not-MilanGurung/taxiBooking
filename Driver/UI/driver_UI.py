@@ -4,6 +4,7 @@ from threading import Thread
 CURRENT_RIDE = 'CURRENT_RIDE'
 PROFILE = 'PROFILE'
 HISTORY = 'HISTORY'
+ASSIGINED = 'ASSIGINED'
 
 class SideNavigationMenu(ttk.Frame):
 
@@ -15,10 +16,12 @@ class SideNavigationMenu(ttk.Frame):
         ttk.Label(self, text=f'Welcome {parent.username}', width=20, justify='center').grid(row=0, column=0, sticky='ew', pady=(40,20), padx=10)
         current = ttk.Button(self, text='Current ride', command=lambda :parent.show_page('currentRide'))
         current.grid(row=2, sticky='ew', pady=20, padx=10)
+        current = ttk.Button(self, text='Assigined Rides', command=lambda :parent.show_page('assiginedRides'))
+        current.grid(row=3, sticky='ew', pady=20, padx=10)
         history = ttk.Button(self, text='Ride history', command=lambda :parent.show_page('rideHistory'))
-        history.grid(row=3, sticky='ew', pady=20, padx=10)
+        history.grid(row=4, sticky='ew', pady=20, padx=10)
         profile = ttk.Button(self, text='Profile', command=lambda :parent.show_page('profile'))
-        profile.grid(row=4, sticky='ew', pady=20, padx=10)
+        profile.grid(row=5, sticky='ew', pady=20, padx=10)
     
 
 class CurrentRide(ttk.Frame):
@@ -82,7 +85,7 @@ class CurrentRide(ttk.Frame):
         self.recive()
     # Read then Load data after reciving from server
     def recive(self):
-        print(self.res)
+
         if self.res[1] is not None:
             self.pickup.set(self.res[1])
             self.dropoff.set(self.res[2])
@@ -101,7 +104,55 @@ class CurrentRide(ttk.Frame):
             self.customerPhone.set('')
 
 
+class AssiginedRides(ttk.Frame):
+    def __init__(self, parent, root):
+        self.root = root
+        super().__init__(parent, style='MainBar.TFrame')
 
+        ttk.Label(self, text='Assigined Rides').grid(row=0, column=0, sticky='')
+        # Assigined rides tree
+        columns= list(range(6))
+        self.tree = ttk.Treeview(self, columns=columns, show='headings', selectmode='browse')
+        self.tree.grid(row=3, column=0)
+        self.treeInitlise()
+
+        scroll = ttk.Scrollbar(self, command=self.tree.yview)
+        scroll.grid(row=3, column=1, sticky='ns')
+        self.tree.configure(yscrollcommand=scroll.set)
+
+        ttk.Button(self, text='Refreash', command=self.get_data).grid(row=1, column=0, pady = 20)
+
+        
+    def treeInitlise(self):
+        self.tree.heading(0, text='Customer Name')
+
+        self.tree.heading(1, text='Pickup Location')
+        self.tree.heading(2, text='Dropoff Location')
+
+        self.tree.heading(3, text='Date')
+        self.tree.column(3, width=80)
+
+        self.tree.heading(4, text='Time')
+        self.tree.column(4, width=60)
+
+        self.tree.heading(5, text='Status')
+        self.tree.column(5, width=150)
+        #test
+    def get_data(self):
+        self.tree.delete(*self.tree.get_children())
+        self.root.send_to_server([ASSIGINED,None])
+        thread = Thread(target=self.recive_thread)
+        thread.start()
+
+    def recive_thread(self):
+        self.res = self.root.recive_from_server()
+        self.recive()
+    
+    def recive(self):
+
+        if self.res[0] == ASSIGINED:
+            for row in self.res[1:]:
+                self.tree.insert('', 'end', values=row)
 
 class RideHistory(ttk.Frame):
     def __init__(self, parent, root):
@@ -147,7 +198,7 @@ class RideHistory(ttk.Frame):
         self.recive()
     
     def recive(self):
-        print(self.res)
+
         if self.res[0] == HISTORY:
             for row in self.res[1:]:
                 self.tree.insert('', 'end', values=row)
@@ -213,6 +264,9 @@ class Driver(ttk.Frame):
 
         self.currentRide = CurrentRide(self, root)
         self.currentRide.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
+
+        self.assiginedRides = AssiginedRides(self, root)
+        self.assiginedRides.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)
 
         self.rideHistory = RideHistory(self, root)
         self.rideHistory.grid(row=0, column=1, sticky='nsew', padx=(0, 20), pady=20)

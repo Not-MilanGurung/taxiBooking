@@ -7,60 +7,63 @@ class Register(ttk.Frame):
      
     def __init__(self, parent, root):
 
-        super().__init__( parent, style='LoginRegister.TFrame')
-        # self.rowconfigure([0,1,2,3,4,5,6,7], weight=1)
-        # self.columnconfigure([0,1,2,3], weight=1)
+        super().__init__( parent)
 
-        text = ttk.Label(self, text="Register", style='mainBgText.TLabel')
         
-        text.grid(row=0, column=2,pady=10)
         self.root = root
         self.parent = parent
 
-        fL = ttk.Label(self, text="First Name", style='mainBgText.TLabel')
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        frame = ttk.Frame(self, style='LoginRegister.TFrame')
+        frame.grid(column=0, row=0, sticky='')
+
+        text = ttk.Label(frame, text="Register", style='mainBgText.TLabel')
+        text.grid(row=0, column=2,pady=10)
+        fL = ttk.Label(frame, text="First Name", style='mainBgText.TLabel')
         fL.grid(row=1, column=1,pady=10, padx=10)
-        mL = ttk.Label(self, text="Middle Name", style='mainBgText.TLabel')
+        mL = ttk.Label(frame, text="Middle Name", style='mainBgText.TLabel')
         mL.grid(row=1, column=2,padx=10, pady=10)
-        lL = ttk.Label(self, text="Last Name", style='mainBgText.TLabel')
+        lL = ttk.Label(frame, text="Last Name", style='mainBgText.TLabel')
         lL.grid(row=1, column=3,padx=10,pady=10)
-        self.fname = ttk.Entry(self)
-        self.mname = ttk.Entry(self)
-        self.lname = ttk.Entry(self)
+        self.fname = ttk.Entry(frame)
+        self.mname = ttk.Entry(frame)
+        self.lname = ttk.Entry(frame)
         self.fname.grid(row=2, column=1,padx=10)
         self.mname.grid(row=2, column=2,padx=10)
         self.lname.grid(row=2, column=3,padx=10)
 
-        phoneL = ttk.Label(self, text="Phone Number", style='mainBgText.TLabel')
+        phoneL = ttk.Label(frame, text="Phone Number", style='mainBgText.TLabel')
         phoneL.grid(row=3, column=1,pady=10)
-        emailL = ttk.Label(self, text="Email", style='mainBgText.TLabel')
+        emailL = ttk.Label(frame, text="Email", style='mainBgText.TLabel')
         emailL.grid(row=3, column=3,pady=10)
-        self.phone = ttk.Entry(self)
-        self.email = ttk.Entry(self)
+        self.phone = ttk.Entry(frame)
+        self.email = ttk.Entry(frame)
         self.phone.grid(row=4, column=1,padx=10)
         self.email.grid(row=4, column=3,padx=10)
 
-        addL = ttk.Label(self, text="Address", style='mainBgText.TLabel')
+        addL = ttk.Label(frame, text="Address", style='mainBgText.TLabel')
         addL.grid(row=5, column=1,pady=10)
-        self.address = ttk.Entry(self)
+        self.address = ttk.Entry(frame)
         self.address.grid(row=6, column=1,padx=10)
 
-        userL = ttk.Label(self, text="User Name", style='mainBgText.TLabel')
+        userL = ttk.Label(frame, text="User Name", style='mainBgText.TLabel')
         userL.grid(row=7, column=1,pady=10)
-        passL= ttk.Label(self, text="Password", style='mainBgText.TLabel')
+        passL= ttk.Label(frame, text="Password", style='mainBgText.TLabel')
         passL.grid(row=7, column=2,pady=10)
-        passLC= ttk.Label(self, text="Confirm Password", style='mainBgText.TLabel')
+        passLC= ttk.Label(frame, text="Confirm Password", style='mainBgText.TLabel')
         passLC.grid(row=7, column=3,pady=10)
-        self.userName = ttk.Entry(self)
-        self.password = ttk.Entry(self, show='*')
-        self.passwordC = ttk.Entry(self, show='*')
+        self.userName = ttk.Entry(frame)
+        self.password = ttk.Entry(frame, show='*')
+        self.passwordC = ttk.Entry(frame, show='*')
         self.userName.grid(row=8, column=1,padx=10)
         self.password.grid(row=8, column=2,padx=10)
         self.passwordC.grid(row=8, column=3,padx=10)
 
-        detail = ttk.Button(self, text='Continue', command=self.check)
+        detail = ttk.Button(frame, text='Continue', command=self.check)
         detail.grid(row=9, column= 2)
 
-        button1 = ttk.Button(self, text ="Login Page", command = lambda : parent.show_frame('login'))
+        button1 = ttk.Button(frame, text ="Login Page", command = lambda : parent.show_frame('loginFrame'))
         button1.grid(row = 9, column = 1, padx = 10, pady = 10)  
     
     def check(self):

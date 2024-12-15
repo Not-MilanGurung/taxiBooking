@@ -69,14 +69,14 @@ class StartPage(ttk.Frame):
             self.columnconfigure(0, weight=1)
             self.rowconfigure(0, weight=1)
              
-            self.login = Login(self, root)
-            self.login.grid_propagate(0)
-            self.login.grid(row=0, column=0, sticky='')
+            self.loginFrame = Login(self, root)
+            self.loginFrame.grid_propagate(0)
+            self.loginFrame.grid(row=0, column=0, sticky='nsew')
 
             self.registerFrame = Register(self, root)
-            self.registerFrame.grid(row=0, column=0, sticky='')
+            self.registerFrame.grid(row=0, column=0, sticky='nsew')
             
-            self.login.tkraise()
+            self.loginFrame.tkraise()
 
         def show_frame(self, frame:str):
             frameObj = self.__dict__[frame]
