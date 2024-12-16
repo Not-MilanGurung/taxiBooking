@@ -52,7 +52,8 @@ class tkinterApp(tk.Tk):
     
     def recive_from_server(self):
         try:
-            return self.con.recive()
+            res =  self.con.recive()
+            return res
         except BrokenPipeError:
             messagebox.showerror('Disconnected','Lost connection with the server.\nTrying again')
             self.connect_server()

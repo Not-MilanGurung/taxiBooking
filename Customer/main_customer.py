@@ -15,7 +15,7 @@ class tkinterApp(tk.Tk):
     def __init__(self,  *args, **kwargs): 
         super().__init__(*args, **kwargs)
         self.geometry('1200x600+100+0')
-         
+        self.title('Taxi Booking: Customer')
         # creating a container
         mainframe = ttk.Frame(self)  
         mainframe.grid(column=0, row=0, sticky=tk.N + tk.W + tk.E + tk.S) 

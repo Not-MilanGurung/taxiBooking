@@ -1,5 +1,4 @@
 from tkinter import ttk, N,E,S,W, Tk, StringVar, messagebox
-from threading import Thread
 
 CURRENT_RIDE = 'CURRENT_RIDE'
 PROFILE = 'PROFILE'
@@ -10,7 +9,7 @@ class SideNavigationMenu(ttk.Frame):
 
     def __init__(self, parent, root):
 
-
+        self.root = root
         super().__init__(parent, style='SideBar.TFrame')
 
         ttk.Label(self, text=f'Welcome {parent.username}', width=20, justify='center').grid(row=0, column=0, sticky='ew', pady=(40,20), padx=10)
@@ -22,6 +21,37 @@ class SideNavigationMenu(ttk.Frame):
         history.grid(row=4, sticky='ew', pady=20, padx=10)
         profile = ttk.Button(self, text='Profile', command=lambda :parent.show_page('profile'))
         profile.grid(row=5, sticky='ew', pady=20, padx=10)
+
+        self.cur_status = StringVar()
+        statuses = ['AVAILABLE', 'BUSY', 'OFFLINE']
+        self.status = ttk.Combobox(self, textvariable=self.cur_status, values=statuses, state='readonly')
+        self.status.grid(row=6, sticky='ew', pady=20, padx=10)
+
+        self.status.bind('<<ComboboxSelected>>', func=self.status_update)
+    
+    
+    def status_update(self, event):
+        cur_status = self.cur_status.get()
+        self.root.send_to_server(['DRIVER_STATUS', cur_status])
+        res = self.root.recive_from_server()
+        self.recive(res)
+            
+
+    def recive(self, res):
+        if res[0] == 'DRIVER_STATUS':
+            match res[1]:
+                case 'AVAILABLE':
+                    i =  0
+                case 'BUSY':
+                    i =  1
+                case 'OFFLINE':
+                    i = 2
+                case _:
+                    i = -1
+            self.status.current(newindex=i)
+            messagebox.showinfo('Status set', f'Status set to res[1]')
+
+
     
 
 class CurrentRide(ttk.Frame):
@@ -68,25 +98,30 @@ class CurrentRide(ttk.Frame):
         self.get_info()
 
         ttk.Button(self, text='Refresh', command=self.get_info).grid(row=3, padx=20, pady=20)
-
-        # ttk.Label(time, text='Photo: ',style='Secondary_Frame.TLabel').grid(row=0, column=0, padx=20)
-        # self.time = StringVar()
-        # ttk.Label(time, textvariable=self.dropoff, style='Secondary_Frame.TLabel').grid(row=0, column=1, padx=20)
+        ttk.Button(self, text='Mark completed', command=self.complete).grid(row=3, column=1, padx=20, pady=20)
+        
+    def complete(self):
+        yn = messagebox.askquestion('Confirm', 'Do you want to mark the ride completed')
+        if yn == 'yes':
+            self.root.send_to_server(['COMPLETED',None])
+            res = self.root.recive_from_server()
+            if res[0] == 'COMPLETED':
+                if res[1] is None:
+                    self.get_info()
+                    messagebox.showinfo('Success', 'Completed the ride')
+                else:
+                    messagebox.showerror('Error', res[1])
+            
     
     def get_info(self):
-        self.res = [None] * 10
+        self.res = [''] * 10
         self.root.send_to_server([CURRENT_RIDE, None])
-        thread = Thread(target=self.recive_thread)
-        thread.start()
-
-    # Thread that waits for server's reply
-    def recive_thread(self):
         self.res = self.root.recive_from_server()
         self.recive()
     # Read then Load data after reciving from server
     def recive(self):
 
-        if self.res[1] is not None:
+        if self.res[0] == 'CURRENT_RIDE':
             self.pickup.set(self.res[1])
             self.dropoff.set(self.res[2])
             self.date.set(self.res[3])
@@ -94,15 +129,6 @@ class CurrentRide(ttk.Frame):
 
             self.customerName.set(self.res[5])
             self.customerPhone.set(self.res[6])
-        else:
-            self.pickup.set('')
-            self.dropoff.set('')
-            self.date.set('')
-            self.time.set('')
-
-            self.customerName.set('')
-            self.customerPhone.set('')
-
 
 class AssiginedRides(ttk.Frame):
     def __init__(self, parent, root):
@@ -111,7 +137,7 @@ class AssiginedRides(ttk.Frame):
 
         ttk.Label(self, text='Assigined Rides').grid(row=0, column=0, sticky='')
         # Assigined rides tree
-        columns= list(range(6))
+        columns= list(range(7))
         self.tree = ttk.Treeview(self, columns=columns, show='headings', selectmode='browse')
         self.tree.grid(row=3, column=0)
         self.treeInitlise()
@@ -121,6 +147,7 @@ class AssiginedRides(ttk.Frame):
         self.tree.configure(yscrollcommand=scroll.set)
 
         ttk.Button(self, text='Refreash', command=self.get_data).grid(row=1, column=0, pady = 20)
+        ttk.Button(self, text='Select', command=self.select).grid(row=2, column=0, pady = 20)
 
         
     def treeInitlise(self):
@@ -137,19 +164,31 @@ class AssiginedRides(ttk.Frame):
 
         self.tree.heading(5, text='Status')
         self.tree.column(5, width=150)
-        #test
+
+        self.tree.heading(6, text='ID')
+        self.tree.column(6, width=20)
+
     def get_data(self):
         self.tree.delete(*self.tree.get_children())
         self.root.send_to_server([ASSIGINED,None])
-        thread = Thread(target=self.recive_thread)
-        thread.start()
 
-    def recive_thread(self):
         self.res = self.root.recive_from_server()
         self.recive()
-    
-    def recive(self):
 
+    def select(self):
+        sel = self.tree.selection()
+        row = self.tree.item(sel[0])
+        record = row['values']
+        self.root.send_to_server(['SELECT',record[6]])
+        res = self.root.recive_from_server()
+        if res[0] == 'SELECT':
+            if res[1] is None:
+                self.get_data()
+                messagebox.showinfo('Succesfully', 'Selected the ride to be the current ride')
+            else:
+                messagebox.showerror('Error', res[1])
+
+    def recive(self):
         if self.res[0] == ASSIGINED:
             for row in self.res[1:]:
                 self.tree.insert('', 'end', values=row)
@@ -190,10 +229,7 @@ class RideHistory(ttk.Frame):
     def get_data(self):
         self.tree.delete(*self.tree.get_children())
         self.root.send_to_server([HISTORY,None])
-        thread = Thread(target=self.recive_thread)
-        thread.start()
 
-    def recive_thread(self):
         self.res = self.root.recive_from_server()
         self.recive()
     
@@ -230,14 +266,21 @@ class Profile(ttk.Frame):
         ttk.Label(personal, text='Phone No.: ',style='Secondary_Frame.TLabel').grid(row=3, column=0, padx=20)
         self.phone = StringVar()
         ttk.Label(personal, textvariable=self.phone, style='Secondary_Frame.TLabel').grid(row=3, column=1, padx=20)
+        
+        ttk.Label(personal, text='Status: ',style='Secondary_Frame.TLabel').grid(row=4, column=0, padx=20)
+        self.status = StringVar()
+        ttk.Label(personal, textvariable=self.status, style='Secondary_Frame.TLabel').grid(row=4, column=1, padx=20)
         self.get_info()
+
     def get_info(self):
+        self.root.send_to_server(['PROFILE',None])
         res = self.root.recive_from_server()
         if res[0] == PROFILE:
             self.name.set(res[2])
             self.phone.set(res[3])
             self.email.set(res[4])
             self.address.set(res[5])
+            self.status.set(res[6])
         else:
             messagebox.showerror('Error', 'Could not get profile info')
 

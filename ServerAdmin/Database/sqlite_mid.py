@@ -27,12 +27,12 @@ def login(user_name: str, password: str):
 
 
 def current_rides():
-    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status NOT IN ('CANCELLED', 'COMPLETED') AND DriverID IS NOT NULL"
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status IN ('ASSIGINED', 'ONGOING') AND DriverID IS NOT NULL"
     res = cur.execute(query)
     return res
 
 def unassigined_rides():
-    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status NOT IN ('CANCELLED', 'COMPLETED') AND DriverID IS NULL"
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status = 'REQUESTED'"
     res = cur.execute(query)
     return res
 
@@ -63,7 +63,7 @@ def personal_detail( name , address: str, phone = 00,  email: str = '') :
     return (name, address, phone, email)
 
 def assign_driver(bookingID, driverID):
-    query = f"UPDATE bookings SET DriverID = {driverID} WHERE BookingID = {bookingID}"
+    query = f"UPDATE bookings SET DriverID = {driverID}, Status = 'ASSIGINED' WHERE BookingID = {bookingID}"
     try:
         cur.execute(query)
         con.commit()

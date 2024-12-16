@@ -1,4 +1,4 @@
-from sqlite3 import connect, Connection, IntegrityError
+from sqlite3 import connect, IntegrityError, OperationalError
 
 
 def select_table(user):
@@ -69,15 +69,17 @@ def current_ride(user, id):
         idget = 'DriverID'
         tableGet = 'drivers'
         column += ', VehicleNo, VehicleType'
+        status = ('ASSIGINED', 'ONGOING', 'REQUESTED')
 
     elif idcolumn == 'DriverID': 
         idget = 'CustomerID'
         tableGet = 'customers'
+        status = ('ONGOING', 'PLACEHOLDER')
 
     con = connect("file:Database/database.db?mode=ro", uri=True)
     cur = con.cursor()
 
-    res = cur.execute(f"SELECT PickupLocation, DropoffLocation, Date, Time, {idget} FROM bookings where {idcolumn} = {id} and Status NOT IN ('CANCELLED','COMPLETED')").fetchone()
+    res = cur.execute(f"SELECT PickupLocation, DropoffLocation, Date, Time, {idget} FROM bookings where {idcolumn} = {id} and Status IN {status}").fetchone()
     if res is None: return ['CURRENT_RIDE', None]
 
     out = [res[0], res[1], res[2], res[3]]
@@ -87,6 +89,7 @@ def current_ride(user, id):
     con.close()
     out = ['CURRENT_RIDE'] + out
     return out
+
 
 def current_rides_driver(user, id):
     idcolumn = 'DriverID'
@@ -98,8 +101,8 @@ def current_rides_driver(user, id):
     cur = con.cursor()
 
     query = f'''SELECT {tableGet}.FullName, bookings.PickupLocation, bookings.DropoffLocation, bookings.Date, 
-                bookings.Time, bookings.Status FROM {tableGet} 
-                JOIN bookings WHERE {tableGet}.{idget} = bookings.{idget} AND bookings.{idcolumn} = {id} AND bookings.Status NOT IN ('CANCELLED','COMPLETED')'''
+                bookings.Time, bookings.Status, bookings.BookingID FROM {tableGet} 
+                JOIN bookings WHERE {tableGet}.{idget} = bookings.{idget} AND bookings.{idcolumn} = {id} AND bookings.Status = "ASSIGINED"'''
     out = cur.execute(query).fetchall()
     con.close()
     out = ['ASSIGINED'] + out
@@ -109,10 +112,13 @@ def profile_info(user, id):
     table, idcolumn = select_table(user)
     con = connect("file:Database/database.db?mode=ro", uri=True)
     cur = con.cursor()
-
+    status = ''
     res = cur.execute(f'SELECT Username, FullName, Phone, Email, Address FROM {table} where {idcolumn} = {id}').fetchone()
+    if idcolumn == 'DriverID':
+        status = cur.execute(f'SELECT Status FROM drivers WHERE {idcolumn} = {id}').fetchone()
     con.close()
-    res = ['PROFILE'] + list(res)
+
+    res = ['PROFILE'] + list(res) + [status]
     return res
 
 def register(user, msg_arr):
@@ -183,7 +189,45 @@ def cancel_ride(user, id):
     con.commit()
     return 'CANCELLED'
 
+def complete_ride(user, id):
+    try:
+        con = connect("file:Database/database.db?mode=rw", uri=True)
+        cur = con.cursor()
 
+        cur.execute(f"UPDATE bookings SET Status = 'COMPLETED' WHERE DriverID = {id} AND Status = 'ONGOING'")
+        con.commit()
+        return ['COMPLETED', None]
+    except:
+        return ['COMPLETED', 'Error occured']
+
+# Update driver's status
+def driver_status(id, status):
+    try:
+        # Database in read and write mode
+        con = connect("file:Database/database.db?mode=rw", uri=True)
+        cur = con.cursor()
+
+        cur.execute(f"UPDATE drivers SET Status = '{status}' WHERE DriverID = {id}")
+        con.commit()
+        con.close()
+        return ['DRIVER_STATUS', status]
+    except:
+        return ['DRIVER_STATUS', 'Error']
+
+# Select a ride and set it's status to be ONGOING
+def select_ride_driver(bookingID, id):
+    try:
+        # Open the database in read and write mode.
+        con = connect("file:Database/database.db?mode=rw", uri=True)
+        cur = con.cursor()
+        # Change the status to ONGOING of the selected booking
+        cur.execute(f"UPDATE bookings SET Status = 'ONGOING' WHERE BookingID = {bookingID} AND DriverID = {id}")
+        con.commit()
+        con.close()
+        # Send back successful message
+        return ['SELECT', None]
+    except OperationalError as error:
+        return ['SELECT', error]
 
 
 

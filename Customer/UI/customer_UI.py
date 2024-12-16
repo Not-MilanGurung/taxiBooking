@@ -323,7 +323,7 @@ class Customer(ttk.Frame):
 
     def starting_data_profile(self):
         self.res = ['No data recived']
-    
+        self.root.send_to_server(['PROFILE', None])
         profile = self.root.recive_from_server()
         self.profile.__dict__['name'].set(profile[2])
         self.profile.__dict__['address'].set(profile[5])

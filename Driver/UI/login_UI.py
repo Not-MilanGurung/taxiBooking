@@ -46,10 +46,6 @@ class Login(ttk.Frame):
     def login(self, username, password):
         self.res = 'No data recived'
         self.root.send_to_server(['DRIVER',LOGIN, username, password])
-        thread = Thread(target=self.recive_thread)
-        thread.start()
-    
-    def recive_thread(self):
         self.res =  self.root.recive_from_server()
         self.recived()
    
@@ -71,6 +67,7 @@ class Login(ttk.Frame):
     def recived(self):
         if self.res == 'Sucess':
             username = self.username.get()
+            print(self.res)
             self.root.show_frame(frame=Driver(self.parent.mainframe, self.root, username))
 
         else:
