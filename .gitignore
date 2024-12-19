@@ -164,4 +164,5 @@ taxi.code-workspace
 *.code-workspace
 
 # Visual Paradigm
-.vpp
+*.vpp
+*.vpp.*
