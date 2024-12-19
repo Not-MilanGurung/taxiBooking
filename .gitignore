@@ -162,3 +162,6 @@ cython_debug/
 #.idea/
 taxi.code-workspace
 *.code-workspace
+
+# Visual Paradigm
+.vpp
