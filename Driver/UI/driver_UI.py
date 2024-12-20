@@ -49,7 +49,7 @@ class SideNavigationMenu(ttk.Frame):
                 case _:
                     i = -1
             self.status.current(newindex=i)
-            messagebox.showinfo('Status set', f'Status set to res[1]')
+            messagebox.showinfo('Status set', f'Status set to {res[1]}')
 
 
     
@@ -99,6 +99,7 @@ class CurrentRide(ttk.Frame):
 
         ttk.Button(self, text='Refresh', command=self.get_info).grid(row=3, padx=20, pady=20)
         ttk.Button(self, text='Mark completed', command=self.complete).grid(row=3, column=1, padx=20, pady=20)
+        ttk.Button(self, text='Change Ride', command=self.change).grid(row=4, column=0, padx=20, pady=20)
         
     def complete(self):
         yn = messagebox.askquestion('Confirm', 'Do you want to mark the ride completed')
@@ -112,7 +113,19 @@ class CurrentRide(ttk.Frame):
                 else:
                     messagebox.showerror('Error', res[1])
             
-    
+    def change(self):
+        yn = messagebox.askquestion('Confirm', 'Do you want to change the current ride')
+        if yn == 'yes':
+            self.root.send_to_server(['CHANGE',None])
+            res = self.root.recive_from_server()
+            if res[0] == 'CHANGE':
+                if res[1] is None:
+                    self.get_info()
+                    messagebox.showinfo('Success', 'Now you can select another assigined ride')
+                else:
+                    messagebox.showerror('Error', res[1])
+            
+
     def get_info(self):
         self.res = [''] * 10
         self.root.send_to_server([CURRENT_RIDE, None])
@@ -122,6 +135,8 @@ class CurrentRide(ttk.Frame):
     def recive(self):
 
         if self.res[0] == 'CURRENT_RIDE':
+            if self.res[1] is None:
+                self.res = ['']*7
             self.pickup.set(self.res[1])
             self.dropoff.set(self.res[2])
             self.date.set(self.res[3])

@@ -2,7 +2,6 @@ import sqlite3
 from os import urandom
 from hashlib import pbkdf2_hmac
 
-
 con = sqlite3.connect("Database/database.db")
 cur = con.cursor()
 
@@ -55,15 +54,6 @@ query = ['create table customers ('
          ' Status varchar(50) not null,'
          ' foreign key(CustomerID) references customers(CustomerID),'
          ' foreign key(DriverID) references drivers(DriverID)'
-         ')',
-         
-         'create table adminBooking ('
-         ' AdminID int not null,'
-         ' BookingID int not null,'
-         ' AssignedDriverID int not null,'
-         ' foreign key(AdminID) references admins(AdminID),'
-         ' foreign key(BookingID) references bookings(BookingID),'
-         ' foreign key(AssignedDriverID) references drivers(DriverID)'
          ')']
 
 for q in query:
@@ -89,6 +79,8 @@ try:
 except:
     print('Server admin already exists')
 
+
+# Test inputs
 # p = '1234567890'
 # hash1 = pbkdf2_hmac('sha256', p.encode(), salt, 10_000)
 # cur.execute('insert into customers (Username, Salt, Hash, FullName, Phone, Email, Address) values(?, ?, ?, ?, ?, ?, ?)',

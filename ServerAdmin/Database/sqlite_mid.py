@@ -27,17 +27,37 @@ def login(user_name: str, password: str):
 
 
 def current_rides():
-    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status IN ('ASSIGINED', 'ONGOING') AND DriverID IS NOT NULL"
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status IN ('ASSIGINED', 'ONGOING') AND DriverID IS NOT NULL ORDER BY Date, Time"
     res = cur.execute(query)
     return res
 
 def unassigined_rides():
-    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status = 'REQUESTED'"
+    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status = 'REQUESTED' ORDER BY Date, Time"
     res = cur.execute(query)
     return res
 
 def double_booked_rides():
-    query = "SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID FROM bookings WHERE Status NOT IN ('CANCELLED', 'COMPLETED') GROUP BY DriverID HAVING COUNT(DriverID)>1"
+    # Query copied from stack overflow at the last moment
+    # It shows all rides of a drivers that are in between one hour of each other
+    query = '''WITH DBR AS (SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID,
+                            LEAD(Time) OVER (PARTITION BY DriverID ORDER BY Time) AS next_time,
+                            LAG(Time) OVER (PARTITION BY DriverID ORDER BY Time) AS prev_time,
+                            LEAD(Date) OVER (PARTITION BY DriverID ORDER BY Date) AS next_date, 
+                            LAG(Date) OVER (PARTITION BY DriverID ORDER BY Date) AS prev_date
+                            FROM bookings WHERE Status IN ('ASSIGINED', 'ONGOING')
+                            )
+                SELECT BookingID, PickupLocation, DropoffLocation, Date, Time, CustomerID, DriverID
+                FROM DBR
+                WHERE
+                    (
+                    ((STRFTIME('%H:%M:%S', prev_time) - STRFTIME('%H:%M:%S', Time)) < 60 * 60
+                    OR
+                    (STRFTIME('%H:%M:%S', Time) - STRFTIME('%H:%M:%S', next_time)) < 60 * 60
+                    )
+                    AND
+                    (prev_date LIKE Date OR next_date LIKE Date)
+                    )
+                ORDER BY Date, DriverID, Time'''
     res = cur.execute(query)
     return res
 

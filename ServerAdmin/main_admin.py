@@ -3,9 +3,7 @@ from tkinter import ttk, messagebox
 from UI.admin_UI_login import Login
 from UI.style import TaxiAppStyle
 
-
 CUSTOMER = 'CUSTOMER'
-
 class tkinterApp(tk.Tk):
 
     def __init__(self,  *args, **kwargs): 
@@ -26,14 +24,10 @@ class tkinterApp(tk.Tk):
 
         self.show_frame(StartPage(mainframe, self))
 
-
     def show_frame(self, frame: ttk.Frame):
         frame.grid(row = 0, column = 0, sticky =(tk.N, tk.S, tk.E, tk.W))
         frame.tkraise()
     
-
-
-
 class StartPage(ttk.Frame):
         
         def __init__(self, mainframe, root):
@@ -52,9 +46,7 @@ class StartPage(ttk.Frame):
 
 
 if __name__ == '__main__':
-
     app = tkinterApp()
-    
     try:
         app.mainloop()
         app.disconnect_server()

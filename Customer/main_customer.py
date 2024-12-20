@@ -1,14 +1,9 @@
-
 import tkinter as tk
-
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 from Networking.client import Client
 from UI.register_UI import Register
 from UI.login_UI import Login
 from UI.style import TaxiAppStyle
-
-
-
 
 class tkinterApp(tk.Tk):
 
@@ -28,11 +23,16 @@ class tkinterApp(tk.Tk):
         mainframe.grid_rowconfigure(0, weight = 1)
 
         self.show_frame(StartPage(mainframe, self))
+        
         self.connect_server()
 
     def connect_server(self):
         try:
-            self.con = Client()
+            ip = simpledialog.askstring('Server IP', "Enter server's ip address\nLeave blank if server is on the same computer")
+            if ip == '':
+                self.con = Client()
+            else:
+                self.con = Client(serverIP=ip)
         except:
             # messagebox.showerror('Network Error', 'Can not connect to the server' )
             res = messagebox.askquestion('Network Error','Can not connect to server'+'\n'+'Try to reconnect?')

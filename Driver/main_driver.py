@@ -1,8 +1,8 @@
-
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, simpledialog
 from Networking.client import Client
 from UI.login_UI import Login
+from UI.register_UI import Register
 from UI.style import TaxiAppStyle
 
 
@@ -30,7 +30,11 @@ class tkinterApp(tk.Tk):
 
     def connect_server(self):
         try:
-            self.con = Client()
+            ip = simpledialog.askstring('Server IP', "Enter server's ip address\nLeave blank if server is on the same computer")
+            if ip == '':
+                self.con = Client()
+            else:
+                self.con = Client(serverIP=ip)
         except:
             # messagebox.showerror('Network Error', 'Can not connect to the server' )
             res = messagebox.askquestion('Network Error','Can not connect to server'+'\n'+'Try to reconnect?')
@@ -72,9 +76,15 @@ class StartPage(ttk.Frame):
             self.columnconfigure(0, weight=1)
             self.rowconfigure(0, weight=1)
              
-            self.login = Login(self, root)
-            self.login.grid_propagate(0)
-            self.login.grid(row=0, column=0, sticky='')
+            self.loginFrame = Login(self, root)
+            self.loginFrame.grid_propagate(0)
+            self.loginFrame.grid(row=0, column=0, sticky='nsew')
+
+            self.registerFrame = Register(self, root)
+            self.registerFrame.grid(row=0, column=0, sticky='nsew')
+            
+            self.loginFrame.tkraise()
+
 
 if __name__ == '__main__':
 

@@ -30,6 +30,7 @@ class SideNavigationMenu(ttk.Frame):
 class CurrentRide(ttk.Frame):
     def __init__(self, parent, root):
         super().__init__(parent, style='MainBar.TFrame')
+        self.parent = parent
 
         ttk.Label(self, text='Current Ride').grid(row=0, column=0, sticky='')
         columns= list(range(7))
@@ -72,7 +73,15 @@ class CurrentRide(ttk.Frame):
             self.tree.insert('', 'end', values=data)
     
     def selection(self):
-        print(self.tree.selection())
+        res = self.tree.selection()
+
+        row = self.tree.item(res[0])
+        record = row['values']
+        selectionPage = self.parent.__dict__['select']
+        selectionPage.__dict__['booking'] = record
+        selectionPage.bookingGet()
+        selectionPage.tkraise()
+
 
 class UnassiginedRide(ttk.Frame):
     def __init__(self, parent, root):
@@ -210,6 +219,7 @@ class SelectionPage(ttk.Frame):
 
 class DoubleBookedRides(ttk.Frame):
     def __init__(self, parent, root):
+        self.parent = parent
         super().__init__(parent, style='MainBar.TFrame')
         ttk.Label(self, text='Double Booked Rides').grid(row=0, column=0, sticky='')
 

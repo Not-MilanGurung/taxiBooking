@@ -13,11 +13,7 @@ FORMAT = 'utf-8'
 # Keywords
 DISCONNECT = 'DISCONNECT!#'
 REGISTER = 'REGISTER'
-BOOK = 'BOOK'
-CURRENT_RIDE = 'CURRENT_RIDE'
-CANCEL = 'CANCEL'
-HISTORY = 'HISTORY'
-ASSIGINED = 'ASSIGINED'
+
 
 class Server(socket.socket):
 
@@ -26,6 +22,7 @@ class Server(socket.socket):
         self.bind((server, port))   # Binding the socket to the server ip and port
         self.server = server
         self.port = port
+        self.started = False
         self.settimeout(1.0)    # Setting the timeout to 1 seconds
 
     # Making sure the input matches the user identifier keyword 
@@ -83,14 +80,14 @@ class Server(socket.socket):
                 case 'BOOK':      # Customer booking request
                     res = Query.book(id, msg)
                     self.send(res, con)
-                case 'PROFILE':
+                case 'PROFILE':     # Returns user's profile info
                     self.send(Query.profile_info(user, id), con)
 
                 case 'CURRENT_RIDE':  # Driver and Customer current ride info
                     self.send(Query.current_ride(user, id), con)
                     
                 case 'ASSIGINED':   # Driver assigined rides list
-                    self.send(Query.current_rides_driver(user, id), con)   
+                    self.send(Query.assigined_rides_driver(user, id), con)   
 
                 case 'CANCEL':      # Customer cancel ride
                     self.send(Query.cancel_ride(user, id), con)
@@ -101,10 +98,13 @@ class Server(socket.socket):
                 case 'DRIVER_STATUS':   # Driver status update
                     self.send(Query.driver_status(id, msg[1]), con)
 
-                case 'SELECT':   # Driver status update
+                case 'SELECT':   # Driver select current ride
                     self.send(Query.select_ride_driver(msg[1], id), con)
 
-                case 'COMPLETED':
+                case 'CHANGE':   # Driver change current ride
+                    self.send(Query.change_current_ride(id), con)
+
+                case 'COMPLETED':   # Driver: Mark the current ride completed
                     self.send(Query.complete_ride(user, id), con)
                 case _:
                     pass
@@ -118,7 +118,7 @@ class Server(socket.socket):
             msg_len = int(msg_len) # Converting from string to integer
 
             msg = pickle.loads(con.recv(msg_len)) # Decoding the message
-            print(msg, con)
+            # print(msg, con) For debugging
             return msg
 
     def send(self, msg, con):
@@ -135,7 +135,7 @@ class Server(socket.socket):
 
         # Sending the server the length of the message
         con.send(msg_len)
-        print(msg)
+        # print(msg) For debugging
         # Sending the message
         con.send(message)
 
